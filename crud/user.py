@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 from models import User
 from schemas import UserCreate, UserUpdate
@@ -5,6 +6,9 @@ from auth import hash_password
 
 
 def create_user(db: Session, user: UserCreate) -> User:
+    existing_user = get_user_by_username(db, user.username)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
     hashed_password = hash_password(user.password)
     db_user = User(
         username=user.username,

@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from utils import get_db
 from models import User
 
-
 # загрузка переменных окружения
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -45,4 +44,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def admin_required(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role.role_name != "Администратор":
         raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+
+def store_required(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role.role_name not in ["Администратор", "Работник склада"]:
+        raise HTTPException(status_code=403, detail="Store access required")
     return current_user

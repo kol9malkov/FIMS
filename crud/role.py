@@ -1,9 +1,13 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from models import Role
 from schemas import RoleCreate, RoleUpdate
 
 
 def create_role(db: Session, role: RoleCreate) -> Role:
+    existing_role = get_role_by_name(db, role.role_name)
+    if existing_role:
+        raise HTTPException(status_code=400, detail="Role already exists")
     db_role = Role(**role.model_dump())
     db.add(db_role)
     db.commit()
