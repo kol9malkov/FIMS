@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from schemas import ProductCreate, ProductUpdate, ProductResponse
+from schemas import ProductCreate, ProductUpdate
 from fastapi import HTTPException
 from models import Product
 
