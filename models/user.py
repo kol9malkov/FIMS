@@ -9,7 +9,7 @@ class User(Base):
     employee_id = Column(Integer, ForeignKey('employees.employee_id'))
     username = Column(String, unique=True)
     password = Column(String)
-    role_id = Column(String, ForeignKey('roles.role_id'))
+    role_id = Column(Integer, ForeignKey('roles.role_id'))
 
     # связи
     employee = relationship("Employee", back_populates="user")
