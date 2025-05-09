@@ -7,7 +7,7 @@ from utils import get_db
 router = APIRouter()
 
 
-@router.post("create", response_model=StoreResponse)
+@router.post("/create", response_model=StoreResponse)
 def create_store(store: StoreCreate, db: Session = Depends(get_db)):
     return crud_store.create_store(db, store)
 

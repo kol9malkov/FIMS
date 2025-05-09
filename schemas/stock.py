@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, field_validator
 from datetime import date, datetime
 
 
@@ -26,7 +25,7 @@ class StockUpdate(BaseModel):
 
 class StockResponse(StockBase):
     stock_id: int
-    updated_at: Optional[datetime] = None
+    updated_datetime: datetime
 
     class Config:
         orm_mode = True

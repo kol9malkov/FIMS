@@ -10,6 +10,7 @@ class Supply(Base):
     store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
     supply_date = Column(DATE, nullable=False)
     supplier_name = Column(String, nullable=False)
+    status = Column(String, default="Ожидается", nullable=False)  # Статус: Ожидается, Доставлено, Принято частично, Принято
 
     # связи
     store = relationship("Store", back_populates="supplies")

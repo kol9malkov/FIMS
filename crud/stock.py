@@ -61,7 +61,7 @@ def update_stock(db: Session, stock_id: int, stock: StockUpdate) -> Stock:
     if not db_stock:
         raise HTTPException(status_code=404, detail="Stock not found")
 
-    db_stock.quantity += stock.quantity
+    db_stock.quantity = db_stock.quantity + stock.quantity
     db.commit()
     db.refresh(db_stock)
     return db_stock
