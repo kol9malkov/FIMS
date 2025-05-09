@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from schemas import StockCreate, StockUpdate, StockResponse, StockSummaryResponse
+from schemas import StockCreate, StockUpdate, StockResponse, StockSummaryResponse, StockStoryResponse
 from crud import stock as crud_stock
 from utils import get_db
 from typing import Optional
@@ -23,7 +23,13 @@ def get_product(stock_id: int, db: Session = Depends(get_db)):
     return crud_stock.get_stock_by_id(db, stock_id)
 
 
-@router.get("stock-summary", response_model=list[StockSummaryResponse])
+@router.get("/store/{store_id}", response_model=list[StockStoryResponse])
+def get_stock_by_store(store_id: int, db: Session = Depends(get_db)):
+    """Получить все остатки товаров в конкретном магазине"""
+    return crud_stock.get_stock_by_store(db, store_id)
+
+
+@router.get("/stock-summary", response_model=list[StockSummaryResponse])
 def get_stock_summary(
         db: Session = Depends(get_db),
         category_id: Optional[int] = None,

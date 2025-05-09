@@ -33,6 +33,26 @@ def get_stock_by_product_and_store(db: Session, product_id: int, store_id: int):
     return db.query(Stock).filter(Stock.product_id == product_id, Stock.store_id == store_id).first()
 
 
+def get_stock_by_store(db: Session, store_id: int):
+    """Получаем все остатки товаров в указанном магазине с адресом магазина"""
+    stocks = (
+        db.query(Stock, Product)
+        .join(Product, Stock.product_id == Product.product_id)
+        .filter(Stock.store_id == store_id)
+        .order_by(Stock.updated_datetime.desc())  # Сортируем по дате обновления
+        .all()
+    )
+
+    return [
+        {
+            "product_name": product.name,
+            "quantity": stock.quantity,
+            "updated_datetime": stock.updated_datetime,
+        }
+        for stock, product in stocks
+    ]
+
+
 def get_stock_summary(db: Session, category_id: Optional[int] = None, name_product: Optional[str] = None):
     query = (
         db.query(Stock, Product, Store)

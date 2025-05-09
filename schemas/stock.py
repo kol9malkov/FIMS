@@ -39,3 +39,12 @@ class StockSummaryResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class StockStoryResponse(BaseModel):
+    product_name: str
+    quantity: int
+    updated_datetime: datetime
+
+    class Config:
+        orm_mode = True
