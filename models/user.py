@@ -14,7 +14,6 @@ class User(Base):
     # связи
     employee = relationship("Employee", back_populates="user")
     role = relationship("Role", back_populates="users")
-    action_logs = relationship("ActionLog", back_populates="user")
     sales = relationship("Sale", back_populates="user")
 
 
