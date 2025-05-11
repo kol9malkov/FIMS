@@ -1,14 +1,10 @@
-from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 from models import User
-from schemas import UserCreate, UserUpdate
+from schemas import UserCreate, UserUpdate, UserResponse
 from auth import hash_password
 
 
 def create_user(db: Session, user: UserCreate) -> User:
-    existing_user = get_user_by_username(db, user.username)
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
     hashed_password = hash_password(user.password)
     db_user = User(
         username=user.username,
@@ -23,7 +19,7 @@ def create_user(db: Session, user: UserCreate) -> User:
 
 
 def get_user_by_id(db: Session, user_id: int) -> User | None:
-    return db.query(User).filter(User.user_id == user_id).first()
+    return db.query(User).get(user_id)
 
 
 def get_user_by_username(db: Session, username: str) -> User | None:
@@ -34,11 +30,11 @@ def get_all_users(db: Session) -> list[User]:
     return db.query(User).options(joinedload(User.role)).all()
 
 
-def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User | None:
-    db_user = get_user_by_id(db, user_id)
-    if not db_user:
-        return None
-    for key, value in user_data.model_dump(exclude_unset=True).items():
+def update_user(db: Session, db_user: User, user_data: UserUpdate) -> User:
+    updates = user_data.model_dump(exclude_unset=True)
+    for key, value in updates.items():
+        if key == "password" and value:
+            value = hash_password(value)
         setattr(db_user, key, value)
     db.commit()
     db.refresh(db_user)

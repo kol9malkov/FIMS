@@ -1,8 +1,8 @@
-"""Initial migration
+"""Создание таблиц
 
-Revision ID: 40c7b8cacc6c
+Revision ID: 36274700c7a7
 Revises: 
-Create Date: 2025-05-09 19:49:24.485213
+Create Date: 2025-05-11 13:47:02.795246
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '40c7b8cacc6c'
+revision: str = '36274700c7a7'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,28 +31,32 @@ def upgrade() -> None:
     op.create_index(op.f('ix_categories_category_id'), 'categories', ['category_id'], unique=False)
     op.create_table('employees',
     sa.Column('employee_id', sa.Integer(), nullable=False),
-    sa.Column('first_name', sa.String(), nullable=True),
-    sa.Column('last_name', sa.String(), nullable=True),
-    sa.Column('position', sa.String(), nullable=True),
-    sa.Column('email', sa.String(), nullable=True),
-    sa.Column('phone', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('employee_id')
+    sa.Column('first_name', sa.String(), nullable=False),
+    sa.Column('last_name', sa.String(), nullable=False),
+    sa.Column('position', sa.String(), nullable=False),
+    sa.Column('email', sa.String(), nullable=False),
+    sa.Column('phone', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('employee_id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('phone')
     )
     op.create_index(op.f('ix_employees_employee_id'), 'employees', ['employee_id'], unique=False)
     op.create_table('payment_methods',
     sa.Column('payment_method_id', sa.Integer(), nullable=False),
-    sa.Column('method_name', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('payment_method_id')
+    sa.Column('method_name', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('payment_method_id'),
+    sa.UniqueConstraint('method_name')
     )
     op.create_table('roles',
     sa.Column('role_id', sa.Integer(), nullable=False),
-    sa.Column('role_name', sa.String(length=64), nullable=True),
-    sa.PrimaryKeyConstraint('role_id')
+    sa.Column('role_name', sa.String(length=64), nullable=False),
+    sa.PrimaryKeyConstraint('role_id'),
+    sa.UniqueConstraint('role_name')
     )
     op.create_index(op.f('ix_roles_role_id'), 'roles', ['role_id'], unique=False)
     op.create_table('stores',
     sa.Column('store_id', sa.Integer(), nullable=False),
-    sa.Column('address', sa.String(), nullable=True),
+    sa.Column('address', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('store_id')
     )
     op.create_index(op.f('ix_stores_store_id'), 'stores', ['store_id'], unique=False)
@@ -64,8 +68,7 @@ def upgrade() -> None:
     sa.Column('barcode', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['category_id'], ['categories.category_id'], ),
-    sa.PrimaryKeyConstraint('product_id'),
-    sa.UniqueConstraint('name')
+    sa.PrimaryKeyConstraint('product_id')
     )
     op.create_index(op.f('ix_products_barcode'), 'products', ['barcode'], unique=True)
     op.create_index(op.f('ix_products_product_id'), 'products', ['product_id'], unique=False)
@@ -82,8 +85,8 @@ def upgrade() -> None:
     op.create_table('users',
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('employee_id', sa.Integer(), nullable=True),
-    sa.Column('username', sa.String(), nullable=True),
-    sa.Column('password', sa.String(), nullable=True),
+    sa.Column('username', sa.String(), nullable=False),
+    sa.Column('password', sa.String(), nullable=False),
     sa.Column('role_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['employee_id'], ['employees.employee_id'], ),
     sa.ForeignKeyConstraint(['role_id'], ['roles.role_id'], ),
@@ -94,13 +97,15 @@ def upgrade() -> None:
     op.create_table('sales',
     sa.Column('sale_id', sa.Integer(), nullable=False),
     sa.Column('sale_datetime', sa.DATETIME(), nullable=True),
-    sa.Column('total_amount', sa.Integer(), nullable=True),
+    sa.Column('total_amount', sa.DECIMAL(precision=10, scale=2), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('status', sa.String(), nullable=False),
+    sa.Column('store_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['store_id'], ['stores.store_id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('sale_id')
     )
-    op.create_table('stock',
+    op.create_table('stocks',
     sa.Column('stock_id', sa.Integer(), nullable=False),
     sa.Column('product_id', sa.Integer(), nullable=False),
     sa.Column('store_id', sa.Integer(), nullable=False),
@@ -111,7 +116,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['store_id'], ['stores.store_id'], ),
     sa.PrimaryKeyConstraint('stock_id')
     )
-    op.create_index(op.f('ix_stock_stock_id'), 'stock', ['stock_id'], unique=False)
+    op.create_index(op.f('ix_stocks_stock_id'), 'stocks', ['stock_id'], unique=False)
     op.create_table('supply_items',
     sa.Column('supply_item_id', sa.Integer(), nullable=False),
     sa.Column('supply_id', sa.Integer(), nullable=True),
@@ -127,7 +132,7 @@ def upgrade() -> None:
     sa.Column('payment_id', sa.Integer(), nullable=False),
     sa.Column('sale_id', sa.Integer(), nullable=False),
     sa.Column('payment_method_id', sa.Integer(), nullable=True),
-    sa.Column('amount', sa.Integer(), nullable=True),
+    sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('payment_datetime', sa.DATETIME(), nullable=True),
     sa.ForeignKeyConstraint(['payment_method_id'], ['payment_methods.payment_method_id'], ),
     sa.ForeignKeyConstraint(['sale_id'], ['sales.sale_id'], ),
@@ -152,8 +157,8 @@ def downgrade() -> None:
     op.drop_table('sale_items')
     op.drop_table('payments')
     op.drop_table('supply_items')
-    op.drop_index(op.f('ix_stock_stock_id'), table_name='stock')
-    op.drop_table('stock')
+    op.drop_index(op.f('ix_stocks_stock_id'), table_name='stocks')
+    op.drop_table('stocks')
     op.drop_table('sales')
     op.drop_index(op.f('ix_users_user_id'), table_name='users')
     op.drop_table('users')

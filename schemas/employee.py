@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 
@@ -6,7 +6,7 @@ class EmployeeBase(BaseModel):
     first_name: str
     last_name: str
     position: str
-    email: str
+    email: EmailStr
     phone: str
 
 

@@ -10,17 +10,6 @@ class RoleCreate(RoleBase):
     pass
 
 
-class RoleUpdate(BaseModel):
-    role_name: Optional[str] = None
-
-
-class RoleNameResponse(BaseModel):
-    role_name: str
-
-    class Config:
-        orm_mode = True
-
-
 class RoleResponse(RoleBase):
     role_id: int
 

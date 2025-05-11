@@ -11,20 +11,27 @@ def create_employee(db: Session, employee: EmployeeCreate) -> Employee:
     return db_employee
 
 
+def get_employee_by_email(db: Session, email: str) -> Employee | None:
+    return db.query(Employee).filter(Employee.email == email).first()
+
+
+def get_employee_by_phone(db: Session, phone: str) -> Employee | None:
+    return db.query(Employee).filter(Employee.phone == phone).first()
+
+
 def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
     return db.query(Employee).filter(Employee.employee_id == employee_id).first()
 
 
-def get_all_employees(db: Session) -> list[Employee]:
+def get_all_employees(db: Session):
     return db.query(Employee).all()
 
 
-def update_employee(db: Session, employee_id: int, employee_data: EmployeeUpdate) -> Employee | None:
-    db_employee = get_employee_by_id(db, employee_id)
-    if not db_employee:
-        return None
-    for key, value in employee_data.model_dump(exclude_unset=True).items():
+def update_employee(db: Session, db_employee: Employee, update_data: EmployeeUpdate) -> Employee:
+    data = update_data.model_dump(exclude_unset=True)
+    for key, value in data.items():
         setattr(db_employee, key, value)
+
     db.commit()
     db.refresh(db_employee)
     return db_employee

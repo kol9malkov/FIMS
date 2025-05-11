@@ -1,14 +1,10 @@
 from pydantic import BaseModel
 from typing import Optional
-from .role import RoleNameResponse
 
 
 class UserLogin(BaseModel):
     username: str
     password: str
-
-    class Config:
-        orm_mode = True
 
 
 class UserLoginResponse(BaseModel):
@@ -27,9 +23,6 @@ class UserCreate(BaseModel):
     password: str
     role_id: int
 
-    class Config:
-        orm_mode = True
-
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -40,7 +33,8 @@ class UserUpdate(BaseModel):
 class UserResponse(BaseModel):
     user_id: int
     username: str
-    role: RoleNameResponse
+    role_name: str
+
 
     class Config:
         orm_mode = True
