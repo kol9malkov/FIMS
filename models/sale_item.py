@@ -2,6 +2,7 @@ from sqlalchemy import ForeignKey, Integer, Float, Column
 from sqlalchemy.orm import relationship
 from database import Base
 
+
 class SaleItem(Base):
     __tablename__ = "sale_items"
 
