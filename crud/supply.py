@@ -1,13 +1,20 @@
 from sqlalchemy.orm import Session, joinedload
-
 from models import SupplyItem, Supply
 from schemas import SupplyCreate, SupplyItemUpdate, SupplyStatusEnum, StockUpdate, StockCreate
-from fastapi import HTTPException
 from crud import product as crud_product
 from crud import stock as crud_stock
 
 
-def create_supply(db: Session, supply: SupplyCreate):
+def existing_supply(db: Session, supply: SupplyCreate) -> Supply | None:
+    # Ищем существующую поставку по store_id, supply_date и supplier_name
+    return db.query(Supply).filter(
+        Supply.store_id == supply.store_id,
+        Supply.supply_date == supply.supply_date,
+        Supply.supplier_name == supply.supplier_name
+    ).first()  # Должен вернуть найденную поставку или None, если не найдена.
+
+
+def create_supply(db: Session, supply: SupplyCreate) -> Supply | None:
     new_supply = Supply(
         store_id=supply.store_id,
         supply_date=supply.supply_date,
@@ -19,7 +26,7 @@ def create_supply(db: Session, supply: SupplyCreate):
     for item in supply.supply_items:
         product = crud_product.get_product_by_id(db, item.product_id)
         if not product:
-            raise HTTPException(status_code=404, detail="Product not found")
+            return None
 
         supply_item = SupplyItem(
             supply_id=new_supply.supply_id,
@@ -27,6 +34,7 @@ def create_supply(db: Session, supply: SupplyCreate):
             quantity=item.quantity
         )
         db.add(supply_item)
+
     db.commit()
     db.refresh(new_supply)
     return new_supply
@@ -34,10 +42,7 @@ def create_supply(db: Session, supply: SupplyCreate):
 
 def get_supply_by_id(db: Session, supply_id: int):
     """ Получение поставки по ID с деталями. """
-    supply = db.query(Supply).filter(Supply.supply_id == supply_id).first()
-    if not supply:
-        raise HTTPException(status_code=404, detail="Supply not found")
-    return supply
+    return db.query(Supply).filter(Supply.supply_id == supply_id).first()
 
 
 def get_all_supplies(db: Session):
@@ -46,55 +51,50 @@ def get_all_supplies(db: Session):
     ).all()
 
 
-def update_supply_item(db: Session, supply_id: int, supply_item_id: int, update_item: SupplyItemUpdate):
-    db_supply = get_supply_by_id(db, supply_id)
-    item = db.query(SupplyItem).filter(
-        SupplyItem.supply_item_id == supply_item_id,
-        SupplyItem.supply_id == supply_id).first()
+def update_supply_item(db: Session, db_supply: Supply, supply_item_id: int, update_item: SupplyItemUpdate):
+    item = next((i for i in db_supply.supply_items if i.supply_item_id == supply_item_id), None)
     if not item:
-        raise HTTPException(status_code=404, detail="Supply not found")
+        return None
 
     item.received_quantity = update_item.received_quantity
     item.is_received = update_item.is_received
-
+    # Обновления статуса поставки
     if db_supply.status == SupplyStatusEnum.PENDING:
         db_supply.status = SupplyStatusEnum.DELIVERED
 
-    if all(item.is_received for item in db_supply.supply_items):
+    if all(i.is_received for i in db_supply.supply_items):
         db_supply.status = SupplyStatusEnum.ACCEPTED
-    elif any(item.is_received for item in db_supply.supply_items):
+    elif any(i.is_received for i in db_supply.supply_items):
         db_supply.status = SupplyStatusEnum.PARTIALLY_ACCEPTED
 
     db.commit()
-    db.refresh(db_supply)
     db.refresh(item)
     return item
 
 
-def close_supply(db: Session, supply_id: int):
-    db_supply = get_supply_by_id(db, supply_id)
+def close_supply(db: Session, db_supply: Supply) -> Supply | None:
     if db_supply.status not in [SupplyStatusEnum.ACCEPTED, SupplyStatusEnum.PARTIALLY_ACCEPTED]:
-        raise HTTPException(status_code=400, detail="Поставка должна быть принята или принято частично")
-
+        return None
     if db_supply.status == SupplyStatusEnum.CLOSED:
-        raise HTTPException(status_code=400, detail="Поставка уже закрыта")
+        return None
 
     db_supply.status = SupplyStatusEnum.CLOSED
 
+    # Обновляем складские остатки для каждого товара в поставке
     for item in db_supply.supply_items:
         if item.is_received:
             stock = crud_stock.get_stock_by_product_and_store(db, item.product_id, db_supply.store_id)
             if stock:
+                # Если товар уже есть на складе, обновляем его количество
                 update_data = StockUpdate(quantity=item.received_quantity)
-                crud_stock.update_stock(db, stock.stock_id, update_data)
+                crud_stock.update_stock(db, stock, update_data)
             else:
+                # Если товара нет на складе, создаем новый
                 new_stock = StockCreate(
                     product_id=item.product_id,
                     store_id=db_supply.store_id,
                     quantity=item.received_quantity,
-                    stock_date=db_supply.supply_date
                 )
                 crud_stock.create_stock(db, new_stock)
-
     db.commit()
     return db_supply

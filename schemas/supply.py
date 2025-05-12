@@ -14,9 +14,6 @@ class SupplyCreate(BaseModel):
     supplier_name: str
     supply_items: list[SupplyItemsCreate]
 
-    class Config:
-        orm_mode = True
-
 
 class SupplyStatusEnum(str, Enum):
     PENDING = "Ожидается"
@@ -34,6 +31,7 @@ class SupplyItemUpdate(BaseModel):
 class SupplyItemsResponse(BaseModel):
     supply_item_id: int
     product_id: int
+    product_name: str
     quantity: int
     received_quantity: int
     is_received: bool
@@ -45,9 +43,10 @@ class SupplyItemsResponse(BaseModel):
 class SupplyResponse(BaseModel):
     supply_id: int
     store_id: int
+    store_name: str
     supply_date: date
     supplier_name: str
-    status: str = "Ожидается"  # Задаем дефолтное значение для поля status
+    status: SupplyStatusEnum = SupplyStatusEnum.PENDING
     supply_items: list[SupplyItemsResponse] = []
 
     class Config:
