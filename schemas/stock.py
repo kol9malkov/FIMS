@@ -6,10 +6,6 @@ class StockBase(BaseModel):
     product_id: int
     store_id: int
     quantity: int
-    stock_date: date
-
-    class Config:
-        orm_mode = True
 
 
 class StockCreate(StockBase):
@@ -19,12 +15,11 @@ class StockCreate(StockBase):
 class StockUpdate(BaseModel):
     quantity: int
 
-    class Config:
-        orm_mode = True
-
 
 class StockResponse(StockBase):
     stock_id: int
+    stock_address: str
+    product_name: str
     updated_datetime: datetime
 
     class Config:
