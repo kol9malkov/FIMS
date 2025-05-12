@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from schemas import UserLoginResponse, UserLogin
-from auth import verify_password, create_access_token
+from schemas import UserLoginResponse
+from auth import verify_password, create_access_token, get_current_user
 import crud.user as crud_user
+from models import User
 from utils import get_db
 
 router = APIRouter()
@@ -21,4 +22,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "role": db_user.role.role_name,
         "access_token": token,
         "token_type": "bearer"
+    }
+
+
+@router.get("/verify-token")
+async def verify_token(current_user: User = Depends(get_current_user)):
+    return {
+        "status": "valid",
+        "user": {
+            "username": current_user.username,
+            "role": current_user.role.role_name
+        }
     }
