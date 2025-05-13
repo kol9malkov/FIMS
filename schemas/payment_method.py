@@ -5,6 +5,10 @@ class PaymentMethodCreate(BaseModel):
     method_name: str
 
 
+class PaymentMethodUpdate(BaseModel):
+    method_name: str
+
+
 class PaymentMethodResponse(BaseModel):
     payment_method_id: int
     method_name: str

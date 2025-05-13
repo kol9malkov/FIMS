@@ -10,4 +10,4 @@ from .supply import (
     SupplyItemsCreate, SupplyCreate, SupplyItemsResponse,
     SupplyResponse, SupplyItemUpdate, SupplyStatusEnum)
 from .sale import SaleItemByBarcode, PaymentCreate, SaleCreate, SaleItemResponse, SaleResponse, PaymentResponse
-from .payment_method import PaymentMethodCreate, PaymentMethodResponse
+from .payment_method import PaymentMethodCreate, PaymentMethodResponse, PaymentMethodUpdate
