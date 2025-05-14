@@ -6,7 +6,7 @@ import {
     deleteEmployee,
     type Employee,
     type EmployeeCreateUpdate
-} from '@/api/employees.ts'
+} from '@/api/employees'
 
 const EmployeesPage = () => {
     const [employees, setEmployees] = useState<Employee[]>([])

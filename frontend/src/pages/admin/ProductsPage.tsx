@@ -6,8 +6,8 @@ import {
     deleteProduct,
     type Product,
     type ProductPayload,
-} from '@/api/products.ts'
-import {getCategories, type Category} from '@/api/categories.ts'
+} from '@/api/products'
+import {getCategories, type Category} from '@/api/categories'
 
 const ProductsPage = () => {
     const [products, setProducts] = useState<Product[]>([])

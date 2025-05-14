@@ -5,7 +5,7 @@ import {
     updateCategory,
     deleteCategory,
     type Category,
-} from '@/api/categories.ts'
+} from '@/api/categories'
 
 const CategoriesPage = () => {
     const [categories, setCategories] = useState<Category[]>([])

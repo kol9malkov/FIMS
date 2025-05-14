@@ -5,7 +5,7 @@ import {
     updateRole,
     deleteRole,
     type Role,
-} from '@/api/roles.ts'
+} from '@/api/roles'
 
 const RolesPage = () => {
     const [roles, setRoles] = useState<Role[]>([])

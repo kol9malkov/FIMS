@@ -5,7 +5,7 @@ import {
     updateStore,
     deleteStore,
     type Store,
-} from '@/api/stores.ts'
+} from '@/api/stores'
 
 const StoresPage = () => {
     const [stores, setStores] = useState<Store[]>([])

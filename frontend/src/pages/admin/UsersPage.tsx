@@ -7,7 +7,7 @@ import {
     deleteUser,
     type User,
     type RoleOption,
-} from '@/api/users.ts'
+} from '@/api/users'
 
 const UsersPage = () => {
     const [users, setUsers] = useState<User[]>([])
