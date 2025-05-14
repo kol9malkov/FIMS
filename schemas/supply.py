@@ -1,3 +1,4 @@
+from decimal import Decimal
 from pydantic import BaseModel
 from datetime import date
 from enum import Enum
@@ -6,6 +7,7 @@ from enum import Enum
 class SupplyItemsCreate(BaseModel):
     product_id: int
     quantity: int
+    price: Decimal
 
 
 class SupplyCreate(BaseModel):

@@ -32,7 +32,8 @@ def create_supply(db: Session, supply: SupplyCreate) -> Supply | None:
         supply_item = SupplyItem(
             supply_id=new_supply.supply_id,
             product_id=item.product_id,
-            quantity=item.quantity
+            quantity=item.quantity,
+            price=item.price
         )
         db.add(supply_item)
 

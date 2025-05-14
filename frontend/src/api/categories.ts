@@ -13,10 +13,12 @@ export const getCategories = async (
     limit: number
 ): Promise<Category[]> => {
     const skip = (page - 1) * limit
-    const response = await api.get(API_URL, {
-        params: {search, skip, limit}
+
+    const response = await api.get<Category[]>(API_URL, {
+        params: {search, skip, limit},
     })
-    return response.data
+
+    return response.data // ✅ теперь тип известен, ошибки не будет
 }
 
 export const createCategory = async (

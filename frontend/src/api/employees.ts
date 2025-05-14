@@ -25,8 +25,8 @@ export const getEmployees = async (
     limit: number
 ): Promise<Employee[]> => {
     const skip = (page - 1) * limit
-    const response = await api.get(API_URL, {
-        params: {search, skip, limit}
+    const response = await api.get<Employee[]>(API_URL, {
+        params: {search, skip, limit},
     })
     return response.data
 }

@@ -17,7 +17,7 @@ export const getStocks = async (
 ): Promise<Stock[]> => {
     const skip = (page - 1) * limit
 
-    const response = await api.get('/store/stocks', {
+    const response = await api.get<Stock[]>('/store/stocks', {
         params: {search, skip, limit}
     })
 

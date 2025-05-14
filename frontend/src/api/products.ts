@@ -26,8 +26,8 @@ export const getProducts = async (
     limit: number
 ): Promise<Product[]> => {
     const skip = (page - 1) * limit
-    const response = await api.get(API_URL, {
-        params: {search, skip, limit}
+    const response = await api.get<Product[]>(API_URL, {
+        params: {search, skip, limit},
     })
     return response.data
 }

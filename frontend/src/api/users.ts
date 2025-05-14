@@ -31,14 +31,14 @@ export const getUsers = async (
     limit: number
 ): Promise<User[]> => {
     const skip = (page - 1) * limit
-    const response = await api.get(API_URL, {
-        params: {search, skip, limit}
+    const response = await api.get<User[]>(API_URL, {
+        params: {search, skip, limit},
     })
     return response.data
 }
 
 export const getRoles = async (): Promise<RoleOption[]> => {
-    const response = await api.get('/admin/roles')
+    const response = await api.get<RoleOption[]>('/admin/roles')
     return response.data
 }
 

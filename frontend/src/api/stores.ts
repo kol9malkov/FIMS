@@ -13,8 +13,8 @@ export const getStores = async (
     limit: number
 ): Promise<Store[]> => {
     const skip = (page - 1) * limit
-    const response = await api.get(API_URL, {
-        params: {search, skip, limit}
+    const response = await api.get<Store[]>(API_URL, {
+        params: {search, skip, limit},
     })
     return response.data
 }

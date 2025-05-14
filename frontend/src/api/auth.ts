@@ -15,9 +15,9 @@ export const login = async (
     params.append('username', username)
     params.append('password', password)
 
-    const response = await api.post('/login', params, {
+    const response = await api.post<LoginResponse>('/login', params, {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
     })
 
-    return response.data
+    return response.data // ✅ теперь тип известен, TS2322 исчезнет
 }

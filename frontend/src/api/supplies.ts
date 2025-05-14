@@ -48,7 +48,7 @@ export const getSupplies = async (
 ): Promise<Supply[]> => {
     const skip = (page - 1) * limit
 
-    const response = await api.get(API_URL, {
+    const response = await api.get<Supply[]>(API_URL, {
         params: {search, skip, limit},
         headers: storeId ? {'X-Store-ID': storeId} : {},
     })

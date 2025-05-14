@@ -1,6 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
+from sqlalchemy import Numeric
 
 
 class SupplyItem(Base):
@@ -12,6 +13,7 @@ class SupplyItem(Base):
     quantity = Column(Integer)
     received_quantity = Column(Integer, default=0)
     is_received = Column(Boolean, default=False)
+    price = Column(Numeric(10, 2), nullable=False)
 
     # связи
     supply = relationship("Supply", back_populates="supply_items")
