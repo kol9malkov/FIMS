@@ -5,7 +5,7 @@ import {
     updateRole,
     deleteRole,
     type Role,
-} from '@/api/roles'
+} from '@/api/roles.ts'
 
 const RolesPage = () => {
     const [roles, setRoles] = useState<Role[]>([])
@@ -17,11 +17,10 @@ const RolesPage = () => {
     const [editingRole, setEditingRole] = useState<Role | null>(null)
     const [roleName, setRoleName] = useState('')
 
-    const token = localStorage.getItem('access_token') || ''
 
     const fetchRoles = async () => {
         try {
-            const data = await getRoles(token, search, page, limit)
+            const data = await getRoles(search, page, limit)
             setRoles(data)
         } catch {
             alert('Ошибка загрузки ролей')
@@ -47,9 +46,9 @@ const RolesPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingRole) {
-                await updateRole(token, editingRole.role_id, roleName)
+                await updateRole(editingRole.role_id, roleName)
             } else {
-                await createRole(token, roleName)
+                await createRole(roleName)
             }
             setIsModalOpen(false)
             await fetchRoles()
@@ -61,7 +60,7 @@ const RolesPage = () => {
     const handleDelete = async (role_id: number) => {
         if (!confirm('Удалить роль?')) return
         try {
-            await deleteRole(token, role_id)
+            await deleteRole(role_id)
             await fetchRoles()
         } catch {
             alert('Ошибка при удалении роли')

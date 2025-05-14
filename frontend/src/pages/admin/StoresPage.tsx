@@ -5,7 +5,7 @@ import {
     updateStore,
     deleteStore,
     type Store,
-} from '@/api/stores'
+} from '@/api/stores.ts'
 
 const StoresPage = () => {
     const [stores, setStores] = useState<Store[]>([])
@@ -17,11 +17,10 @@ const StoresPage = () => {
     const [editingStoreId, setEditingStoreId] = useState<number | null>(null)
     const [address, setAddress] = useState('')
 
-    const token = localStorage.getItem('access_token') || ''
 
     const fetchData = async () => {
         try {
-            const data = await getStores(token, search, page, limit)
+            const data = await getStores(search, page, limit)
             setStores(data)
         } catch {
             alert('Ошибка при загрузке магазинов')
@@ -47,9 +46,9 @@ const StoresPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingStoreId) {
-                await updateStore(token, editingStoreId, address)
+                await updateStore(editingStoreId, address)
             } else {
-                await createStore(token, address)
+                await createStore(address)
             }
             setIsModalOpen(false)
             fetchData()
@@ -61,7 +60,7 @@ const StoresPage = () => {
     const handleDelete = async (id: number) => {
         if (!confirm('Удалить магазин?')) return
         try {
-            await deleteStore(token, id)
+            await deleteStore(id)
             fetchData()
         } catch {
             alert('Ошибка при удалении магазина')

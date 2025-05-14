@@ -11,8 +11,11 @@ def create_category(db: Session, category: CategoryCreate) -> Category:
     return db_category
 
 
-def get_all_categories(db: Session):
-    return db.query(Category).all()
+def get_all_categories(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+    query = db.query(Category)
+    if search:
+        query = query.filter(Category.name.ilike(f'%{search}%'))
+    return query.offset(skip).limit(limit).all()
 
 
 def get_category_by_id(db: Session, category_id: int) -> Category | None:

@@ -6,8 +6,8 @@ import {
     deleteProduct,
     type Product,
     type ProductPayload,
-} from '@/api/products'
-import {getCategories, type Category} from '@/api/categories'
+} from '@/api/products.ts'
+import {getCategories, type Category} from '@/api/categories.ts'
 
 const ProductsPage = () => {
     const [products, setProducts] = useState<Product[]>([])
@@ -28,13 +28,12 @@ const ProductsPage = () => {
         category_id: 0,
     })
 
-    const token = localStorage.getItem('access_token') || ''
 
     const fetchData = async () => {
         try {
             const [productData, categoryData] = await Promise.all([
-                getProducts(token, search, page, limit),
-                getCategories(token, '', 1, 100),
+                getProducts(search, page, limit),
+                getCategories('', 1, 100),
             ])
             setProducts(productData)
             setCategories(categoryData)
@@ -68,9 +67,9 @@ const ProductsPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingProductId) {
-                await updateProduct(token, editingProductId, formData)
+                await updateProduct(editingProductId, formData)
             } else {
-                await createProduct(token, formData)
+                await createProduct(formData)
             }
             setIsModalOpen(false)
             fetchData()
@@ -82,7 +81,7 @@ const ProductsPage = () => {
     const handleDelete = async (id: number) => {
         if (!confirm('Удалить товар?')) return
         try {
-            await deleteProduct(token, id)
+            await deleteProduct(id)
             fetchData()
         } catch {
             alert('Ошибка при удалении товара')

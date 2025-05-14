@@ -9,7 +9,7 @@ from utils.to_things_Response import to_product_response
 router = APIRouter()
 
 
-@router.post("/create", response_model=ProductResponse, dependencies=[Depends(admin_required)])
+@router.post("/create", response_model=ProductResponse)
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
     db_product = crud_product.get_product_by_barcode(db, product.barcode)
     if db_product:
@@ -21,8 +21,8 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[ProductResponse])
-def get_products(db: Session = Depends(get_db)):
-    products = crud_product.get_all_products(db)
+def get_products(skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db)):
+    products = crud_product.get_all_products(db, skip=skip, limit=limit, search=search)
     return [to_product_response(p) for p in products]
 
 
@@ -50,7 +50,7 @@ def get_product_by_name(product_name: str, db: Session = Depends(get_db)):
     return to_product_response(product)
 
 
-@router.put("/id/{product_id}", response_model=ProductResponse, dependencies=[Depends(admin_required)])
+@router.put("/id/{product_id}", response_model=ProductResponse)
 def update_product_by_id(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
     db_product = crud_product.get_product_by_id(db, product_id)
     if not db_product:
@@ -59,7 +59,7 @@ def update_product_by_id(product_id: int, product: ProductUpdate, db: Session = 
     return to_product_response(updated_product)
 
 
-@router.put("/barcode/{barcode}", response_model=ProductResponse, dependencies=[Depends(admin_required)])
+@router.put("/barcode/{barcode}", response_model=ProductResponse)
 def update_product_by_barcode(barcode: str, product: ProductUpdate, db: Session = Depends(get_db)):
     db_product = crud_product.get_product_by_barcode(db, barcode)
     if not db_product:
@@ -68,13 +68,13 @@ def update_product_by_barcode(barcode: str, product: ProductUpdate, db: Session 
     return to_product_response(updated_product)
 
 
-@router.delete("/id/{product_id}", status_code=204, dependencies=[Depends(admin_required)])
+@router.delete("/id/{product_id}", status_code=204)
 def delete_product_by_id(product_id: int, db: Session = Depends(get_db)):
     if not crud_product.delete_product(db, product_id):
         raise HTTPException(404, detail="Продукт не найден")
 
 
-@router.delete("/barcode/{barcode}", status_code=204, dependencies=[Depends(admin_required)])
+@router.delete("/barcode/{barcode}", status_code=204)
 def delete_product_barcode(barcode: str, db: Session = Depends(get_db)):
     product = crud_product.get_product_by_barcode(db, barcode)
     if not product:

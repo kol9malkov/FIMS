@@ -6,7 +6,7 @@ import {
     deleteEmployee,
     type Employee,
     type EmployeeCreateUpdate
-} from '@/api/employees'
+} from '@/api/employees.ts'
 
 const EmployeesPage = () => {
     const [employees, setEmployees] = useState<Employee[]>([])
@@ -25,11 +25,10 @@ const EmployeesPage = () => {
         phone: '',
     })
 
-    const token = localStorage.getItem('access_token') || ''
 
     const fetchData = async () => {
         try {
-            const data = await getEmployees(token, search, page, limit)
+            const data = await getEmployees(search, page, limit)
             setEmployees(data)
         } catch {
             alert('Ошибка при загрузке сотрудников')
@@ -61,9 +60,9 @@ const EmployeesPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingEmployeeId) {
-                await updateEmployee(token, editingEmployeeId, formData)
+                await updateEmployee(editingEmployeeId, formData)
             } else {
-                await createEmployee(token, formData)
+                await createEmployee(formData)
             }
             setIsModalOpen(false)
             fetchData()
@@ -75,7 +74,7 @@ const EmployeesPage = () => {
     const handleDelete = async (id: number) => {
         if (!confirm('Удалить сотрудника?')) return
         try {
-            await deleteEmployee(token, id)
+            await deleteEmployee(id)
             fetchData()
         } catch {
             alert('Ошибка при удалении сотрудника')

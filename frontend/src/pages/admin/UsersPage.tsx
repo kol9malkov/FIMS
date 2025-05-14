@@ -7,7 +7,7 @@ import {
     deleteUser,
     type User,
     type RoleOption,
-} from '@/api/users'
+} from '@/api/users.ts'
 
 const UsersPage = () => {
     const [users, setUsers] = useState<User[]>([])
@@ -26,12 +26,11 @@ const UsersPage = () => {
         role_id: '',
     })
 
-    const token = localStorage.getItem('access_token') || ''
 
     const fetchData = async () => {
         try {
-            const users = await getUsers(token, search, page, limit)
-            const roles = await getRoles(token)
+            const users = await getUsers(search, page, limit)
+            const roles = await getRoles()
             setUsers(users)
             setRoles(roles)
         } catch {
@@ -63,13 +62,13 @@ const UsersPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingUserId) {
-                await updateUser(token, editingUserId, {
+                await updateUser(editingUserId, {
                     username: formData.username,
                     password: formData.password || undefined,
                     role_id: Number(formData.role_id),
                 })
             } else {
-                await createUser(token, {
+                await createUser({
                     username: formData.username,
                     password: formData.password,
                     role_id: Number(formData.role_id),
@@ -86,7 +85,7 @@ const UsersPage = () => {
     const handleDelete = async (id: number) => {
         if (!confirm('Удалить пользователя?')) return
         try {
-            await deleteUser(token, id)
+            await deleteUser(id)
             fetchData()
         } catch {
             alert('Ошибка при удалении пользователя')

@@ -19,8 +19,11 @@ def get_role_by_name(db: Session, role_name: str) -> Role | None:
     return db.query(Role).filter(Role.role_name == role_name).first()
 
 
-def get_all_roles(db: Session):
-    return db.query(Role).all()
+def get_all_roles(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+    query = db.query(Role)
+    if search:
+        query = query.filter(Role.role_name.ilike(f"%{search}%"))
+    return query.offset(skip).limit(limit).all()
 
 
 def update_role(db: Session, db_role: Role, role_data: RoleBase) -> Role | None:

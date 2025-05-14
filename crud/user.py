@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session, joinedload
-from models import User
-from schemas import UserCreate, UserUpdate, UserResponse
+from models import User, Role
+from schemas import UserCreate, UserUpdate
 from auth import hash_password
+from sqlalchemy import or_
 
 
 def create_user(db: Session, user: UserCreate) -> User:
@@ -26,8 +27,18 @@ def get_user_by_username(db: Session, username: str) -> User | None:
     return db.query(User).filter(User.username == username).first()
 
 
-def get_all_users(db: Session) -> list[User]:
-    return db.query(User).options(joinedload(User.role)).all()
+def get_all_users(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+    query = db.query(User).join(User.role).options(joinedload(User.role))
+
+    if search:
+        query = query.filter(
+            or_(
+                User.username.ilike(f"%{search}%"),
+                Role.role_name.ilike(f"%{search}%")
+            )
+        )
+
+    return query.offset(skip).limit(limit).all()
 
 
 def update_user(db: Session, db_user: User, user_data: UserUpdate) -> User:

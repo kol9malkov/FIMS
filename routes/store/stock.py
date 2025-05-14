@@ -21,8 +21,8 @@ def create_stock(stock: StockCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[StockResponse])
-def get_stocks(db: Session = Depends(get_db)):
-    stocks = crud_stock.get_all_stocks(db)
+def get_stocks(skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db)):
+    stocks = crud_stock.get_all_stocks(db, skip=skip, limit=limit, search=search)
     return [to_stock_response(s) for s in stocks]
 
 
@@ -35,9 +35,9 @@ def get_stock(stock_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/store/{store_id}", response_model=list[StockStoryResponse])
-def get_stock_by_store(store_id: int, db: Session = Depends(get_db)):
+def get_stock_by_store(store_id: int, skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db)):
     """Получить все остатки товаров в конкретном магазине"""
-    db_stocks = crud_stock.get_stock_by_store(db, store_id)
+    db_stocks = crud_stock.get_stock_by_store(db, store_id, skip=skip, limit=limit, search=search)
     if not db_stocks:
         raise HTTPException(status_code=404, detail="Остатки в данном магазине не найдены")
     return [

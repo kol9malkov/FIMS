@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from models import Employee
 from schemas import EmployeeCreate, EmployeeUpdate
+from sqlalchemy import or_
 
 
 def create_employee(db: Session, employee: EmployeeCreate) -> Employee:
@@ -23,8 +24,18 @@ def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
     return db.query(Employee).filter(Employee.employee_id == employee_id).first()
 
 
-def get_all_employees(db: Session):
-    return db.query(Employee).all()
+def get_all_employees(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+    query = db.query(Employee)
+
+    if search:
+        query = query.filter(
+            or_(
+                Employee.first_name.ilike(f"%{search}%"),
+                Employee.last_name.ilike(f"%{search}%"),
+                Employee.position.ilike(f"%{search}%")
+            )
+        )
+    return query.offset(skip).limit(limit).all()
 
 
 def update_employee(db: Session, db_employee: Employee, update_data: EmployeeUpdate) -> Employee:

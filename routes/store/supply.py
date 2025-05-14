@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from crud import supply as crud_supply
-from dependencies.dependence import admin_required
+from dependencies.dependence import admin_required, get_store_id
 from utils import get_db
 from utils.to_things_Response import to_supply_response, to_supply_item_response
 from schemas import SupplyCreate, SupplyResponse, SupplyItemUpdate, SupplyItemsResponse
@@ -10,7 +10,11 @@ router = APIRouter()
 
 
 @router.post("/create", response_model=SupplyResponse)
-def create_supply(supply: SupplyCreate, db: Session = Depends(get_db)):
+def create_supply(supply: SupplyCreate, db: Session = Depends(get_db), store_id: int = Depends(get_store_id)):
+    # Защита: создание только в рамках текущего магазина
+    if supply.store_id != store_id:
+        raise HTTPException(status_code=403, detail="Вы не можете создать поставку в другой магазин")
+
     db_supply = crud_supply.existing_supply(db, supply)
     if db_supply:
         # Сравниваем товары в уже существующей поставке и новой
@@ -33,25 +37,46 @@ def create_supply(supply: SupplyCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[SupplyResponse])
-def get_supplies(db: Session = Depends(get_db)):
-    db_supplies = crud_supply.get_all_supplies(db)
-    return [to_supply_response(s) for s in db_supplies]
+def get_supplies(
+    skip: int = 0,
+    limit: int = 15,
+    search: str = '',
+    db: Session = Depends(get_db),
+    store_id: int = Depends(get_store_id)
+):
+    db_supplies = crud_supply.get_all_supplies(db, skip, limit, search)
+    # Фильтруем по текущему магазину
+    filtered = [s for s in db_supplies if s.store_id == store_id]
+    return [to_supply_response(s) for s in filtered]
 
 
 @router.get("/id/{supply_id}", response_model=SupplyResponse)
-def get_supply(supply_id: int, db: Session = Depends(get_db)):
+def get_supply(
+    supply_id: int,
+    db: Session = Depends(get_db),
+    store_id: int = Depends(get_store_id)
+):
     db_supply = crud_supply.get_supply_by_id(db, supply_id)
-    if not db_supply:
+    if not db_supply or db_supply.store_id != store_id:
         raise HTTPException(status_code=404, detail="Поставка не найдена")
+
     return to_supply_response(db_supply)
 
 
 @router.patch("/{supply_id}/{item_id}", response_model=SupplyItemsResponse)
-def update_supply_item(supply_id: int, supply_item_id: int, update_item: SupplyItemUpdate,
-                       db: Session = Depends(get_db)):
+def update_supply_item(
+        supply_id: int,
+        supply_item_id: int,
+        update_item: SupplyItemUpdate,
+        db: Session = Depends(get_db),
+        store_id: int = Depends(get_store_id)
+):
     db_supply = crud_supply.get_supply_by_id(db, supply_id)
     if not db_supply:
         raise HTTPException(status_code=404, detail="Поставка не найдена")
+    if db_supply.store_id != store_id:
+        raise HTTPException(status_code=403, detail="Вы не можете редактировать поставки другого магазина")
+
     updated_item = crud_supply.update_supply_item(db, db_supply, supply_item_id, update_item)
     if not updated_item:
         raise HTTPException(status_code=404, detail="Элемент поставки не найден")
@@ -59,13 +84,19 @@ def update_supply_item(supply_id: int, supply_item_id: int, update_item: SupplyI
 
 
 @router.post("/{supply_id}/close", response_model=SupplyResponse)
-def close_supply(supply_id: int, db: Session = Depends(get_db)):
+def close_supply(
+    supply_id: int,
+    db: Session = Depends(get_db),
+    store_id: int = Depends(get_store_id)
+):
     db_supply = crud_supply.get_supply_by_id(db, supply_id)
-    if not db_supply:
+    if not db_supply or db_supply.store_id != store_id:
         raise HTTPException(status_code=404, detail="Поставка не найдена")
+
     closed_supply = crud_supply.close_supply(db, db_supply)
     if not closed_supply:
         raise HTTPException(status_code=400, detail="Не удалось закрыть поставку или она уже закрыта")
+
     return to_supply_response(closed_supply)
 
 

@@ -1,5 +1,6 @@
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
-from models import SupplyItem, Supply
+from models import SupplyItem, Supply, Store
 from schemas import SupplyCreate, SupplyItemUpdate, SupplyStatusEnum, StockUpdate, StockCreate
 from crud import product as crud_product
 from crud import stock as crud_stock
@@ -45,10 +46,26 @@ def get_supply_by_id(db: Session, supply_id: int):
     return db.query(Supply).filter(Supply.supply_id == supply_id).first()
 
 
-def get_all_supplies(db: Session):
-    return db.query(Supply).options(
-        joinedload(Supply.supply_items).joinedload(SupplyItem.product)
-    ).all()
+def get_all_supplies(db: Session, skip: int = 0, limit: int = 20, search: str = ''):
+    query = (
+        db.query(Supply)
+        .join(Store, Supply.store_id == Store.store_id)
+        .options(
+            joinedload(Supply.supply_items).joinedload(SupplyItem.product),
+            joinedload(Supply.store)
+        )
+    )
+
+    if search:
+        query = query.filter(
+            or_(
+                Supply.supplier_name.ilike(f'%{search}%'),
+                Store.address.ilike(f'%{search}%'),
+                Supply.status.ilike(f'%{search}%')
+            )
+        )
+
+    return query.order_by(Supply.supply_date.desc()).offset(skip).limit(limit).all()
 
 
 def update_supply_item(db: Session, db_supply: Supply, supply_item_id: int, update_item: SupplyItemUpdate):

@@ -11,8 +11,11 @@ def create_store(db: Session, store: StoreCreate) -> Store:
     return db_store
 
 
-def get_all_stores(db: Session):
-    return db.query(Store).all()
+def get_all_stores(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+    query = db.query(Store)
+    if search:
+        query = query.filter(Store.address.ilike(f'%{search}%'))
+    return query.offset(skip).limit(limit).all()
 
 
 def get_store_by_id(db: Session, store_id: int) -> Store | None:

@@ -5,7 +5,7 @@ import {
     updateCategory,
     deleteCategory,
     type Category,
-} from '@/api/categories'
+} from '@/api/categories.ts'
 
 const CategoriesPage = () => {
     const [categories, setCategories] = useState<Category[]>([])
@@ -17,11 +17,10 @@ const CategoriesPage = () => {
     const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
     const [categoryName, setCategoryName] = useState('')
 
-    const token = localStorage.getItem('access_token') || ''
 
     const fetchData = async () => {
         try {
-            const data = await getCategories(token, search, page, limit)
+            const data = await getCategories(search, page, limit)
             setCategories(data)
         } catch {
             alert('Ошибка при загрузке категорий')
@@ -47,9 +46,9 @@ const CategoriesPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingCategoryId) {
-                await updateCategory(token, editingCategoryId, categoryName)
+                await updateCategory(editingCategoryId, categoryName)
             } else {
-                await createCategory(token, categoryName)
+                await createCategory(categoryName)
             }
             setIsModalOpen(false)
             fetchData()
@@ -61,7 +60,7 @@ const CategoriesPage = () => {
     const handleDelete = async (id: number) => {
         if (!confirm('Удалить категорию?')) return
         try {
-            await deleteCategory(token, id)
+            await deleteCategory(id)
             fetchData()
         } catch {
             alert('Ошибка при удалении категории')

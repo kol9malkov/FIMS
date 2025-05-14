@@ -1,9 +1,7 @@
-from os.path import exists
-from unicodedata import category
-
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from schemas import ProductCreate, ProductUpdate
 from models import Product, Category
+from sqlalchemy import or_
 
 
 def create_product(db: Session, product: ProductCreate) -> Product | None:
@@ -29,8 +27,18 @@ def get_product_by_barcode(db: Session, barcode: str) -> Product | None:
     return db.query(Product).filter(Product.barcode == barcode).first()
 
 
-def get_all_products(db: Session):
-    return db.query(Product).all()
+def get_all_products(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+    query = db.query(Product).join(Product.category).options(joinedload(Product.category))
+
+    if search:
+        query = query.filter(
+            or_(
+                Product.name.ilike(f"%{search}%"),
+                Product.barcode.ilike(f"%{search}%")
+            )
+        )
+
+    return query.offset(skip).limit(limit).all()
 
 
 def update_product(db: Session, db_product: Product, product_data: ProductUpdate):
