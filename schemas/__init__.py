@@ -11,4 +11,4 @@ from .supply import (
     SupplyResponse, SupplyItemUpdate, SupplyStatusEnum)
 from .sale import SaleItemByBarcode, PaymentCreate, SaleCreate, SaleItemResponse, SaleResponse, PaymentResponse
 from .payment_method import PaymentMethodCreate, PaymentMethodResponse, PaymentMethodUpdate
-from .analytics import SupplyAnalyticsResponse
+from .analytics import SupplyAnalyticsResponse, StoreAnalytics, StoreSalesAnalytics, SalesAnalyticsResponse

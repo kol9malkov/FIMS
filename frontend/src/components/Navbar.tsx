@@ -19,6 +19,7 @@ const Navbar = () => {
                         <Link to="/admin/products" className="hover:underline">Товары</Link>
                         <Link to="/admin/payments" className="hover:underline">Способы оплаты</Link>
                         <Link to="/admin/supplies" className="hover:underline">Аналитика поставок</Link>
+                        <Link to="/admin/sales" className="hover:underline">Аналитика продаж</Link>
                     </>
                 )}
 

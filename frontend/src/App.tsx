@@ -13,6 +13,7 @@ import SupplyAnalyticsPage from './pages/admin/SupplyAnalyticsPage'
 import StockPage from './pages/StockPage'
 import SupplyPage from './pages/SupplyPage'
 import StorePage from './pages/StorePage'
+import SalesAnalyticsPage from "@/pages/admin/SalesAnalyticsPage";
 
 function App() {
     const {isAuthenticated, role, loading} = useAuth()
@@ -50,6 +51,7 @@ function App() {
                 <Route path="products" element={<ProductsPage/>}/>
                 <Route path="payments" element={<PaymentMethodsPage/>}/>
                 <Route path="supplies" element={<SupplyAnalyticsPage/>}/>
+                <Route path="sales" element={<SalesAnalyticsPage/>}/>
             </Route>
 
             {/* Складская панель */}
