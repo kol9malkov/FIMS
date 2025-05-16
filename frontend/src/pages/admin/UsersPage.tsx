@@ -104,148 +104,170 @@ const UsersPage = () => {
     }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Пользователи</h2>
-                <button
-                    onClick={openCreateModal}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
+        <div className="container py-4">
+            {/* Заголовок и кнопка */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="mb-0">Пользователи</h2>
+                <button className="btn btn-primary" onClick={openCreateModal}>
                     Добавить пользователя
                 </button>
             </div>
 
-            <input
-                type="text"
-                value={search}
-                onChange={e => {
-                    setSearch(e.target.value)
-                    setPage(1)
-                }}
-                placeholder="Поиск по логину или роли..."
-                className="border px-3 py-2 rounded w-full max-w-md mb-4"
-            />
+            {/* Поиск */}
+            <div className="mb-3">
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                    }}
+                    placeholder="Поиск по логину или роли..."
+                    className="form-control"
+                />
+            </div>
 
-            <table className="w-full border text-sm mb-4">
-                <thead className="bg-blue-100">
-                <tr>
-                    <th className="border p-2">ID</th>
-                    <th className="border p-2">Логин</th>
-                    <th className="border p-2">Роль</th>
-                    <th className="border p-2">Действия</th>
-                </tr>
-                </thead>
-                <tbody>
-                {users.map(user => (
-                    <tr key={user.user_id} className="hover:bg-blue-50">
-                        <td className="border p-2">{user.user_id}</td>
-                        <td className="border p-2">{user.username}</td>
-                        <td className="border p-2">{user.role_name}</td>
-                        <td className="border p-2">
-                            <button
-                                onClick={() => openEditModal(user)}
-                                className="text-blue-600 hover:underline mr-2"
-                            >
-                                Редактировать
-                            </button>
-                            <button
-                                onClick={() => handleDelete(user.user_id)}
-                                className="text-red-600 hover:underline"
-                            >
-                                Удалить
-                            </button>
-                        </td>
+            {/* Таблица */}
+            <div className="table-responsive">
+                <table className="table table-bordered table-hover text-sm">
+                    <thead className="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Логин</th>
+                        <th>Роль</th>
+                        <th>Действия</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {users.map((user) => (
+                        <tr key={user.user_id}>
+                            <td>{user.user_id}</td>
+                            <td>{user.username}</td>
+                            <td>{user.role_name}</td>
+                            <td>
+                                <div className="d-flex gap-2">
+                                    <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => openEditModal(user)}
+                                    >
+                                        Редактировать
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-outline-danger"
+                                        onClick={() => handleDelete(user.user_id)}
+                                    >
+                                        Удалить
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
 
-            <div className="flex justify-between">
+            {/* Пагинация */}
+            <div className="d-flex justify-content-between align-items-center mt-3">
                 <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                 >
                     ← Назад
                 </button>
-                <span className="text-sm text-gray-600">Страница {page}</span>
+                <span className="text-muted">Страница {page}</span>
                 <button
-                    onClick={() => setPage(p => p + 1)}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setPage((p) => p + 1)}
                     disabled={users.length < limit}
                 >
                     Вперёд →
                 </button>
             </div>
 
+            {/* Модальное окно */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {editingUserId ? 'Редактирование пользователя' : 'Новый пользователь'}
-                        </h3>
-                        <input
-                            type="text"
-                            name="username"
-                            value={formData.username}
-                            onChange={e => setFormData({...formData, username: e.target.value})}
-                            placeholder="Имя пользователя"
-                            className="border p-2 rounded w-full mb-3"
-                        />
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={e => setFormData({...formData, password: e.target.value})}
-                            placeholder="Пароль"
-                            className="border p-2 rounded w-full mb-3"
-                        />
-                        <select
-                            name="role_id"
-                            value={formData.role_id}
-                            onChange={e => setFormData({...formData, role_id: e.target.value})}
-                            className="border p-2 rounded w-full mb-3"
-                        >
-                            <option value="">Выберите роль</option>
-                            {roles.map(role => (
-                                <option key={role.role_id} value={role.role_id}>
-                                    {role.role_name}
-                                </option>
-                            ))}
-                        </select>
-                        {!editingUserId && (
-                            <select
-                                name="employee_id"
-                                value={formData.employee_id}
-                                onChange={e => setFormData({...formData, employee_id: e.target.value})}
-                                className="border p-2 rounded w-full mb-4"
-                            >
-                                <option value="">Выберите сотрудника</option>
-                                {employees.map(emp => (
-                                    <option key={emp.employee_id} value={emp.employee_id}>
-                                        {emp.first_name} {emp.last_name} — {emp.position}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                            >
-                                Отмена
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                            >
-                                Сохранить
-                            </button>
+                <div className="modal d-block" tabIndex={-1}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">
+                                    {editingUserId ? 'Редактирование пользователя' : 'Новый пользователь'}
+                                </h5>
+                                <button type="button" className="btn-close"
+                                        onClick={() => setIsModalOpen(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={(e) =>
+                                        setFormData({...formData, username: e.target.value})
+                                    }
+                                    placeholder="Имя пользователя"
+                                    className="form-control mb-3"
+                                />
+
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={(e) =>
+                                        setFormData({...formData, password: e.target.value})
+                                    }
+                                    placeholder="Пароль"
+                                    className="form-control mb-3"
+                                />
+
+                                <select
+                                    name="role_id"
+                                    value={formData.role_id}
+                                    onChange={(e) =>
+                                        setFormData({...formData, role_id: e.target.value})
+                                    }
+                                    className="form-select mb-3"
+                                >
+                                    <option value="">Выберите роль</option>
+                                    {roles.map((role) => (
+                                        <option key={role.role_id} value={role.role_id}>
+                                            {role.role_name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {!editingUserId && (
+                                    <select
+                                        name="employee_id"
+                                        value={formData.employee_id}
+                                        onChange={(e) =>
+                                            setFormData({...formData, employee_id: e.target.value})
+                                        }
+                                        className="form-select mb-3"
+                                    >
+                                        <option value="">Выберите сотрудника</option>
+                                        {employees.map((emp) => (
+                                            <option key={emp.employee_id} value={emp.employee_id}>
+                                                {emp.first_name} {emp.last_name} — {emp.position}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
+                                    Отмена
+                                </button>
+                                <button className="btn btn-primary" onClick={handleSubmit}>
+                                    Сохранить
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
         </div>
+
     )
 }
 

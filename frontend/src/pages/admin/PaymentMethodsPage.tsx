@@ -43,53 +43,61 @@ const PaymentMethodsPage = () => {
     }
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Методы оплаты</h1>
+        <div className="container py-4">
+            <h2 className="mb-4 fw-bold">Методы оплаты</h2>
 
-            <div className="flex gap-2 mb-4">
+            {/* Форма добавления */}
+            <div className="d-flex gap-2 mb-4">
                 <input
-                    className="border px-2 py-1 rounded"
+                    type="text"
+                    className="form-control"
+                    placeholder="Новый метод оплаты"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Новый метод оплаты"
                 />
-                <button className="bg-blue-500 text-white px-4 py-1 rounded" onClick={handleCreate}>
+                <button className="btn btn-primary" onClick={handleCreate}>
                     Добавить
                 </button>
             </div>
 
-            <table className="w-full border text-sm">
-                <thead className="bg-gray-100">
-                <tr>
-                    <th className="p-2 border">ID</th>
-                    <th className="p-2 border">Название</th>
-                    <th className="p-2 border">Действия</th>
-                </tr>
-                </thead>
-                <tbody>
-                {methods.map((m) => (
-                    <tr key={m.payment_method_id} className="hover:bg-gray-50">
-                        <td className="p-2 border">{m.payment_method_id}</td>
-                        <td className="p-2 border">{m.method_name}</td>
-                        <td className="p-2 border">
-                            <button
-                                className="text-blue-600 mr-2"
-                                onClick={() => handleUpdate(m.payment_method_id, m.method_name)}
-                            >
-                                Редактировать
-                            </button>
-                            <button
-                                className="text-red-600"
-                                onClick={() => handleDelete(m.payment_method_id)}
-                            >
-                                Удалить
-                            </button>
-                        </td>
+            {/* Таблица */}
+            <div className="table-responsive">
+                <table className="table table-bordered table-hover text-sm">
+                    <thead className="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Действия</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {methods.map((m) => (
+                        <tr key={m.payment_method_id}>
+                            <td>{m.payment_method_id}</td>
+                            <td>{m.method_name}</td>
+                            <td>
+                                <div className="d-flex gap-2">
+                                    <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => handleUpdate(m.payment_method_id, m.method_name)}
+                                    >
+                                        Редактировать
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-outline-danger"
+                                        onClick={() => handleDelete(m.payment_method_id)}
+                                    >
+                                        Удалить
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     )
 }
 

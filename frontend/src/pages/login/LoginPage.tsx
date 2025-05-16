@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import {useAuth} from '@/contexts/AuthContext'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const LoginPage = () => {
     const {login} = useAuth()
@@ -20,38 +21,61 @@ const LoginPage = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white p-6 rounded shadow-md w-96 space-y-4"
+        <div
+            className="d-flex align-items-center justify-content-center min-vh-100"
+            style={{
+                background: 'linear-gradient(to bottom right, #e6ecf3, #cfd9e9)',
+                padding: '1rem',
+            }}
+        >
+            <div
+                className="card shadow-sm p-4 rounded-4 animate-fade-slide"
+                style={{width: '100%', maxWidth: '400px'}}
             >
-                <h2 className="text-2xl font-bold text-center">Вход в систему</h2>
+                <h2 className="text-center mb-4 fw-bold">Вход в систему</h2>
 
-                {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label htmlFor="username" className="form-label">
+                            Имя пользователя
+                        </label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="username"
+                            placeholder="Введите имя"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                <input
-                    type="text"
-                    placeholder="Имя пользователя"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full border p-2 rounded"
-                />
+                    <div className="mb-3">
+                        <label htmlFor="password" className="form-label">
+                            Пароль
+                        </label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            id="password"
+                            placeholder="Введите пароль"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                <input
-                    type="password"
-                    placeholder="Пароль"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border p-2 rounded"
-                />
+                    {error && (
+                        <div className="text-danger small text-center mb-3">
+                            {error}
+                        </div>
+                    )}
 
-                <button
-                    type="submit"
-                    className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                >
-                    Войти
-                </button>
-            </form>
+                    <button type="submit" className="btn btn-primary w-100">
+                        Войти
+                    </button>
+                </form>
+            </div>
         </div>
     )
 }

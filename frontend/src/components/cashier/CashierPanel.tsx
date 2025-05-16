@@ -82,91 +82,105 @@ const CashierPanel = () => {
     }
 
     return (
-        <div className="max-w-3xl mx-auto p-4">
-            <div className="flex justify-between mb-4">
-                <h1 className="text-xl font-semibold">Кассовая панель</h1>
+        <div className="container py-4" style={{maxWidth: '720px'}}>
+            {/* Заголовок */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1 className="h4 mb-0 fw-bold">Кассовая панель</h1>
             </div>
 
-            <div className="flex gap-2 mb-4">
+            {/* Поле сканера */}
+            <div className="input-group mb-4">
                 <input
                     type="text"
+                    className="form-control"
                     value={barcode}
-                    onChange={e => setBarcode(e.target.value)}
+                    onChange={(e) => setBarcode(e.target.value)}
                     placeholder="Введите штрихкод"
-                    className="border p-2 rounded w-full"
-                    onKeyDown={e => e.key === 'Enter' && handleScan()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleScan()}
                 />
-                <button
-                    onClick={handleScan}
-                    className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
-                >
+                <button onClick={handleScan} className="btn btn-primary">
                     ➕
                 </button>
             </div>
 
-            <table className="w-full border text-sm mb-4">
-                <thead className="bg-blue-100">
-                <tr>
-                    <th className="border p-2">Товар</th>
-                    <th className="border p-2">Цена</th>
-                    <th className="border p-2">Кол-во</th>
-                    <th className="border p-2">Сумма</th>
-                    <th className="border p-2">Действие</th>
-                </tr>
-                </thead>
-                <tbody>
-                {items.map(item => (
-                    <tr key={item.product_id}>
-                        <td className="border p-2">{item.product_name}</td>
-                        <td className="border p-2">{item.price.toFixed(2)}</td>
-                        <td className="border p-2">{item.quantity}</td>
-                        <td className="border p-2">{(item.quantity * item.price).toFixed(2)}</td>
-                        <td className="border p-2 text-center">
-                            <button
-                                className="text-red-600 hover:underline"
-                                onClick={() => handleRemove(item.product_id)}
-                            >
-                                Удалить
-                            </button>
-                        </td>
+            {/* Таблица товаров */}
+            <div className="table-responsive mb-4">
+                <table className="table table-bordered table-hover align-middle text-sm">
+                    <thead className="table-light">
+                    <tr>
+                        <th>Товар</th>
+                        <th>Цена</th>
+                        <th>Кол-во</th>
+                        <th>Сумма</th>
+                        <th>Действие</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
-
-            <div className="mb-4">Итого: <strong>{total.toFixed(2)} ₽</strong></div>
-
-            <h3 className="font-semibold mt-4 mb-2">Оплата</h3>
-            <div className="flex gap-2 mb-4 items-center">
-                <select
-                    className="border p-2 rounded w-1/3"
-                    value={payment.method}
-                    onChange={e => setPayment(prev => ({...prev, method: e.target.value}))}
-                >
-                    <option value="">-- Способ оплаты --</option>
-                    {payments.map(pm => (
-                        <option key={pm.payment_method_id} value={pm.payment_method_id.toString()}>
-                            {pm.method_name}
-                        </option>
+                    </thead>
+                    <tbody>
+                    {items.map((item) => (
+                        <tr key={item.product_id}>
+                            <td>{item.product_name}</td>
+                            <td>{item.price.toFixed(2)}</td>
+                            <td>{item.quantity}</td>
+                            <td>{(item.quantity * item.price).toFixed(2)}</td>
+                            <td className="text-center">
+                                <button
+                                    className="btn btn-sm btn-link text-danger"
+                                    onClick={() => handleRemove(item.product_id)}
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
                     ))}
-                </select>
-                <input
-                    type="text"
-                    className="border p-2 rounded w-1/3 bg-gray-100 cursor-not-allowed"
-                    placeholder="Сумма"
-                    value={payment.amount}
-                    readOnly
-                />
+                    </tbody>
+                </table>
             </div>
 
+            {/* Итого */}
+            <div className="mb-4">
+                <strong>Итого:</strong> {total.toFixed(2)} ₽
+            </div>
+
+            {/* Оплата */}
+            <h5 className="fw-semibold mb-2">Оплата</h5>
+            <div className="row g-2 align-items-center mb-4">
+                <div className="col-md-6">
+                    <select
+                        className="form-select"
+                        value={payment.method}
+                        onChange={(e) =>
+                            setPayment((prev) => ({...prev, method: e.target.value}))
+                        }
+                    >
+                        <option value="">-- Способ оплаты --</option>
+                        {payments.map((pm) => (
+                            <option key={pm.payment_method_id} value={pm.payment_method_id.toString()}>
+                                {pm.method_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-md-6">
+                    <input
+                        type="text"
+                        className="form-control bg-light"
+                        placeholder="Сумма"
+                        value={payment.amount}
+                        readOnly
+                    />
+                </div>
+            </div>
+
+            {/* Подтверждение */}
             <button
                 onClick={handleConfirm}
                 disabled={!payment.method || items.length === 0}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                className="btn btn-success"
             >
                 Подтвердить продажу
             </button>
         </div>
+
     )
 }
 

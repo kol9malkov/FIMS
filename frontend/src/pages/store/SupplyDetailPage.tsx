@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {useParams} from 'react-router-dom'
+import {useNavigate, useParams} from 'react-router-dom'
 import {getSupplyById, updateSupplyItem, closeSupply} from '@/api/supplies'
 import type {Supply, SupplyItem} from '@/api/supplies'
 import {useAuth} from '@/contexts/AuthContext'
@@ -8,6 +8,7 @@ const SupplyDetailPage = () => {
     const {supplyId} = useParams<{ supplyId: string }>()
     const {storeId} = useAuth()
     const safeStoreId = storeId ?? undefined
+    const navigate = useNavigate()
 
     const [supply, setSupply] = useState<Supply | null>(null)
     const [loading, setLoading] = useState(true)
@@ -69,101 +70,118 @@ const SupplyDetailPage = () => {
     if (!supply) return null
 
     return (
-        <div className="max-w-4xl mx-auto p-4">
-            <h2 className="text-xl font-semibold mb-4">Поставка #{supply.supply_id}</h2>
+        <div className="container py-4" style={{maxWidth: '960px'}}>
+            <h2 className="fw-bold fs-4 mb-4">Поставка #{supply.supply_id}</h2>
 
-            <div className="mb-4 text-sm space-y-1">
+            <div className="mb-4 small">
                 <p><strong>Магазин:</strong> {supply.store_name}</p>
                 <p><strong>Поставщик:</strong> {supply.supplier_name}</p>
                 <p><strong>Дата:</strong> {new Date(supply.supply_date).toLocaleDateString('ru-RU')}</p>
                 <p><strong>Статус:</strong> {supply.status}</p>
             </div>
 
-            <table className="w-full border text-sm mb-4">
-                <thead className="bg-blue-100">
-                <tr>
-                    <th className="border p-2">Товар</th>
-                    <th className="border p-2">Заказано</th>
-                    <th className="border p-2">Принято</th>
-                    <th className="border p-2">Принято (✓)</th>
-                    {isEditable && <th className="border p-2">Действие</th>}
-                </tr>
-                </thead>
-                <tbody>
-                {localItems.map(item => (
-                    <tr key={item.supply_item_id}>
-                        <td className="border p-2">{item.product_name}</td>
-                        <td className="border p-2">{item.quantity}</td>
-                        <td className="border p-2">
-                            {isEditable ? (
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={item.quantity}
-                                    value={item.received_quantity}
-                                    onChange={e => {
-                                        const value = parseInt(e.target.value)
-                                        const safeValue = isNaN(value) ? 0 : Math.min(value, item.quantity)
-                                        setLocalItems(prev =>
-                                            prev.map(i =>
-                                                i.supply_item_id === item.supply_item_id
-                                                    ? {...i, received_quantity: safeValue}
-                                                    : i
-                                            )
-                                        )
-                                    }}
-                                    className="border px-2 py-1 rounded w-20"
-                                />
-                            ) : (
-                                item.received_quantity
-                            )}
-                        </td>
-                        <td className="border p-2 text-center">
-                            {isEditable ? (
-                                <input
-                                    type="checkbox"
-                                    checked={item.is_received}
-                                    onChange={e =>
-                                        setLocalItems(prev =>
-                                            prev.map(i =>
-                                                i.supply_item_id === item.supply_item_id
-                                                    ? {...i, is_received: e.target.checked}
-                                                    : i
-                                            )
-                                        )
-                                    }
-                                />
-                            ) : item.is_received ? '✓' : ''}
-                        </td>
-                        {isEditable && (
-                            <td className="border p-2">
-                                {savedItemIds.has(item.supply_item_id) ? (
-                                    <span className="text-green-600 text-sm">✓ Сохранено</span>
+            {/* Таблица товаров */}
+            <div className="table-responsive mb-4">
+                <table className="table table-bordered align-middle text-sm">
+                    <thead className="table-light">
+                    <tr>
+                        <th>Товар</th>
+                        <th>Заказано</th>
+                        <th>Принято</th>
+                        <th className="text-center">✓</th>
+                        {isEditable && <th>Действие</th>}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {localItems.map((item) => (
+                        <tr key={item.supply_item_id}>
+                            <td>{item.product_name}</td>
+                            <td>{item.quantity}</td>
+                            <td>
+                                {isEditable ? (
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        max={item.quantity}
+                                        value={item.received_quantity}
+                                        onChange={(e) => {
+                                            const value = parseInt(e.target.value);
+                                            const safeValue = isNaN(value) ? 0 : Math.min(value, item.quantity);
+                                            setLocalItems((prev) =>
+                                                prev.map((i) =>
+                                                    i.supply_item_id === item.supply_item_id
+                                                        ? {...i, received_quantity: safeValue}
+                                                        : i
+                                                )
+                                            );
+                                        }}
+                                        className="form-control form-control-sm w-100"
+                                        style={{maxWidth: '80px'}}
+                                    />
                                 ) : (
-                                    <button
-                                        onClick={() => handleUpdateItem(item.supply_item_id)}
-                                        disabled={updatingItemId === item.supply_item_id}
-                                        className={`text-blue-600 hover:underline text-sm ${updatingItemId === item.supply_item_id ? 'opacity-50' : ''}`}
-                                    >
-                                        {updatingItemId === item.supply_item_id ? 'Сохраняю...' : 'Сохранить'}
-                                    </button>
+                                    item.received_quantity
                                 )}
                             </td>
-                        )}
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+                            <td className="text-center">
+                                {isEditable ? (
+                                    <input
+                                        type="checkbox"
+                                        checked={item.is_received}
+                                        onChange={(e) =>
+                                            setLocalItems((prev) =>
+                                                prev.map((i) =>
+                                                    i.supply_item_id === item.supply_item_id
+                                                        ? {...i, is_received: e.target.checked}
+                                                        : i
+                                                )
+                                            )
+                                        }
+                                    />
+                                ) : item.is_received ? '✓' : ''}
+                            </td>
+                            {isEditable && (
+                                <td>
+                                    {savedItemIds.has(item.supply_item_id) ? (
+                                        <span className="text-success small">✓ Сохранено</span>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleUpdateItem(item.supply_item_id)}
+                                            disabled={updatingItemId === item.supply_item_id}
+                                            className={`btn btn-link btn-sm p-0 text-primary ${
+                                                updatingItemId === item.supply_item_id ? 'opacity-50' : ''
+                                            }`}
+                                        >
+                                            {updatingItemId === item.supply_item_id ? 'Сохраняю...' : 'Сохранить'}
+                                        </button>
+                                    )}
+                                </td>
+                            )}
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
 
-            {canClose && (
+            {/* Кнопка закрытия */}
+            <div className="d-flex justify-content-between align-items-center mt-3">
                 <button
-                    onClick={handleClose}
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                    className="btn btn-secondary"
+                    onClick={() => navigate(-1)}
                 >
-                    Закрыть поставку
+                    ← Назад
                 </button>
-            )}
+
+                {canClose && (
+                    <button
+                        className="btn btn-success"
+                        onClick={handleClose}
+                    >
+                        Закрыть поставку
+                    </button>
+                )}
+            </div>
         </div>
+
     )
 }
 

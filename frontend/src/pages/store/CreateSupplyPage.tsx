@@ -91,45 +91,50 @@ const CreateSupplyPage = () => {
     }
 
     return (
-        <div className="max-w-2xl mx-auto p-4">
-            <h2 className="text-xl font-semibold mb-4">Создание поставки</h2>
+        <div className="container py-4" style={{maxWidth: '720px'}}>
+            <h2 className="fw-bold fs-4 mb-4">Создание поставки</h2>
 
+            {/* Поставщик */}
             <div className="mb-3">
-                <label className="block mb-1">Поставщик</label>
+                <label className="form-label">Поставщик</label>
                 <input
                     type="text"
-                    className="border rounded px-3 py-2 w-full"
+                    className="form-control"
                     value={supplierName}
                     onChange={(e) => setSupplierName(e.target.value)}
                 />
             </div>
 
+            {/* Дата поставки */}
             <div className="mb-3">
-                <label className="block mb-1">Дата поставки</label>
+                <label className="form-label">Дата поставки</label>
                 <input
                     type="date"
-                    className="border rounded px-3 py-2"
+                    className="form-control"
                     value={supplyDate}
                     onChange={(e) => setSupplyDate(e.target.value)}
                 />
             </div>
 
-            <div className="mb-3">
-                <label className="block mb-1">Поиск товара</label>
+            {/* Поиск товара */}
+            <div className="mb-3 position-relative">
+                <label className="form-label">Поиск товара</label>
                 <input
                     type="text"
-                    className="border rounded px-3 py-2 w-full"
+                    className="form-control"
                     placeholder="Введите наименование товара..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 {search.length > 0 && suggestions.length > 0 && (
-                    <ul className="bg-white border w-full mt-1 max-h-40 overflow-y-auto shadow-md rounded mb-4">
-                        {suggestions.map(product => (
+                    <ul className="list-group position-absolute z-3 w-100 mt-1 shadow-sm"
+                        style={{maxHeight: '160px', overflowY: 'auto'}}>
+                        {suggestions.map((product) => (
                             <li
                                 key={product.product_id}
-                                className="px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+                                className="list-group-item list-group-item-action"
                                 onClick={() => handleAddProduct(product)}
+                                style={{cursor: 'pointer'}}
                             >
                                 {product.name}
                             </li>
@@ -138,53 +143,71 @@ const CreateSupplyPage = () => {
                 )}
             </div>
 
-            <div className="mb-6 mt-4">
-                {items.map((item, index) => (
-                    <div key={index} className="flex flex-wrap gap-3 items-center mb-2">
-            <span className="text-sm w-2/5">
+            {/* Список товаров */}
+            {items.length > 0 && (
+                <div className="mb-4 mt-3">
+                    {items.map((item, index) => (
+                        <div className="row align-items-center g-2 mb-2" key={index}>
+                            <div className="col-md-5">
+            <span className="form-text small">
               {productMap[item.product_id] || `ID ${item.product_id}`}
             </span>
-                        <input
-                            type="number"
-                            min={1}
-                            value={item.quantity}
-                            onChange={(e) =>
-                                handleItemChange(index, 'quantity', parseInt(e.target.value))
-                            }
-                            className="border px-2 py-1 rounded w-1/5"
-                            placeholder="Количество"
-                        />
-                        <input
-                            type="number"
-                            min={0.01}
-                            step={0.01}
-                            value={item.price}
-                            onChange={(e) =>
-                                handleItemChange(index, 'price', parseFloat(e.target.value))
-                            }
-                            className="border px-2 py-1 rounded w-1/5"
-                            placeholder="Цена"
-                        />
-                        <button
-                            onClick={() => handleRemoveItem(index)}
-                            className="text-red-600 text-sm hover:underline"
-                        >
-                            Удалить
-                        </button>
-                    </div>
-                ))}
+                            </div>
+                            <div className="col-md-2">
+                                <input
+                                    type="number"
+                                    min={1}
+                                    value={item.quantity}
+                                    onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))}
+                                    className="form-control"
+                                    placeholder="Кол-во"
+                                />
+                            </div>
+                            <div className="col-md-2">
+                                <input
+                                    type="number"
+                                    min={0.01}
+                                    step={0.01}
+                                    value={item.price}
+                                    onChange={(e) => handleItemChange(index, 'price', parseFloat(e.target.value))}
+                                    className="form-control"
+                                    placeholder="Цена"
+                                />
+                            </div>
+                            <div className="col-md-3">
+                                <button
+                                    className="btn btn-link text-danger p-0"
+                                    onClick={() => handleRemoveItem(index)}
+                                >
+                                    Удалить
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Ошибка */}
+            {error && <p className="text-danger mb-3">{error}</p>}
+
+            {/* Кнопка */}
+            <div className="d-flex justify-content-end gap-2 mt-4">
+                <button
+                    className="btn btn-secondary"
+                    onClick={() => navigate(-1)} // <- возвращаем на предыдущую
+                >
+                    Отмена
+                </button>
+                <button
+                    className="btn btn-primary"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                >
+                    {loading ? 'Создание...' : 'Создать поставку'}
+                </button>
             </div>
-
-            {error && <p className="text-red-600 mb-2">{error}</p>}
-
-            <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-            >
-                {loading ? 'Создание...' : 'Создать поставку'}
-            </button>
         </div>
+
     )
 }
 

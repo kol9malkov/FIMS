@@ -69,9 +69,16 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
         setUsername(data.username)
         setRole(data.role)
 
-        if (data.role === 'Администратор') navigate('/admin')
-        else if (data.role === 'Склад' || data.role === 'Кассир') navigate('/store/select')
-        else navigate('/login')
+        if (data.role === 'Администратор') {
+            navigate('/admin')
+        } else if (data.role === 'Склад') {
+            navigate('/store/select')
+        } else if (data.role === 'Кассир') {
+            navigate('/cashier/select')
+        } else {
+            navigate('/login')
+        }
+
     }
 
 

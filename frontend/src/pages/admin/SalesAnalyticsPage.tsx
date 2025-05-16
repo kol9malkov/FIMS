@@ -28,88 +28,135 @@ const SalesAnalyticsPage = () => {
     }, [])
 
     return (
-        <div className="p-4 space-y-4">
-            <h1 className="text-2xl font-bold">Аналитика по продажам</h1>
+        <div className="container py-4">
+            <h2 className="fw-bold fs-3 mb-4">Аналитика по продажам</h2>
 
-            <div className="flex flex-wrap gap-4">
-                <select
-                    value={storeId}
-                    onChange={(e) => setStoreId(e.target.value)}
-                    className="border px-3 py-2 rounded"
-                >
-                    <option value="">Все магазины</option>
-                    {stores.map((s) => (
-                        <option key={s.store_id} value={s.store_id}>
-                            {s.address}
-                        </option>
-                    ))}
-                </select>
+            {/* Фильтры */}
+            <form className="row gy-3 align-items-end mb-4">
+                <div className="col-md-3">
+                    <label className="form-label">Магазин</label>
+                    <select
+                        value={storeId}
+                        onChange={(e) => setStoreId(e.target.value)}
+                        className="form-select"
+                    >
+                        <option value="">Все магазины</option>
+                        {stores.map((s) => (
+                            <option key={s.store_id} value={s.store_id}>
+                                {s.address}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="border px-3 py-2 rounded"
-                />
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="border px-3 py-2 rounded"
-                />
+                <div className="col-md-3">
+                    <label className="form-label">Дата от</label>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="form-control"
+                    />
+                </div>
 
-                <button
-                    onClick={fetchData}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                    Обновить
-                </button>
-            </div>
+                <div className="col-md-3">
+                    <label className="form-label">Дата до</label>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="form-control"
+                    />
+                </div>
 
+                <div className="col-md-3">
+                    <button
+                        type="button"
+                        onClick={fetchData}
+                        className="btn btn-primary w-100"
+                    >
+                        Обновить
+                    </button>
+                </div>
+            </form>
+
+            {/* Аналитика */}
             {data && (
                 <>
-                    <div className="p-4 border rounded shadow space-y-2">
-                        <p>Количество продаж: <strong>{data.total_sales}</strong></p>
-                        <p>Сумма продаж: <strong>{data.total_amount.toFixed(2)} ₽</strong></p>
-                        <p>Средний чек: <strong>{data.average_check.toFixed(2)} ₽</strong></p>
-                    </div>
-
-                    <div className="p-4 border rounded shadow space-y-2">
-                        <h2 className="font-semibold text-lg">Продажи по магазинам</h2>
-                        <ul className="list-disc ml-6 space-y-1">
-                            {data.sales_per_store.map((s) => (
-                                <li key={s.store_id}>
-                                    <strong>{s.store_address}</strong> — {s.count} продаж на
-                                    сумму {s.total_amount.toFixed(2)} ₽
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {data.top_product && (
-                        <div className="p-4 border rounded shadow">
-                            <h2 className="font-semibold text-lg">Самый ходовой товар</h2>
-                            <p>
-                                <strong>{data.top_product.name}</strong> — {data.top_product.total_sold} шт.
-                            </p>
+                    {/* Карточки */}
+                    <div className="row g-3 mb-4">
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0 bg-light">
+                                <div className="card-body">
+                                    <p className="text-muted mb-1">Количество продаж</p>
+                                    <h4 className="fw-bold">{data.total_sales}</h4>
+                                </div>
+                            </div>
                         </div>
-                    )}
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0 bg-light">
+                                <div className="card-body">
+                                    <p className="text-muted mb-1">Сумма продаж</p>
+                                    <h4 className="fw-bold">{data.total_amount.toFixed(2)} ₽</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0 bg-light">
+                                <div className="card-body">
+                                    <p className="text-muted mb-1">Средний чек</p>
+                                    <h4 className="fw-bold">{data.average_check.toFixed(2)} ₽</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                    {data.payments_stats && (
-                        <div className="p-4 border rounded shadow">
-                            <h2 className="font-semibold text-lg">Способы оплаты</h2>
-                            <ul className="list-disc ml-6 space-y-1">
-                                {data.payments_stats.map((p, i) => (
-                                    <li key={i}>
-                                        {p.method_name}: {p.total_amount.toFixed(2)} ₽
+                    {/* Продажи по магазинам */}
+                    <div className="card shadow-sm border-0 mb-4">
+                        <div className="card-body">
+                            <h5 className="fw-semibold mb-3">Продажи по магазинам</h5>
+                            <ul className="list-group list-group-flush">
+                                {data.sales_per_store.map((s) => (
+                                    <li key={s.store_id} className="list-group-item">
+                                        <strong>{s.store_address}</strong> — {s.count} продаж на сумму{' '}
+                                        {s.total_amount.toFixed(2)} ₽
                                     </li>
                                 ))}
                             </ul>
+                        </div>
+                    </div>
+
+                    {/* Топ товар */}
+                    {data.top_product && (
+                        <div className="card shadow-sm border-0 mb-4">
+                            <div className="card-body">
+                                <h5 className="fw-semibold mb-2">Самый ходовой товар</h5>
+                                <p className="mb-0">
+                                    <strong>{data.top_product.name}</strong> — {data.top_product.total_sold} шт.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Способы оплаты */}
+                    {data.payments_stats && (
+                        <div className="card shadow-sm border-0 mb-4">
+                            <div className="card-body">
+                                <h5 className="fw-semibold mb-2">Структура оплат</h5>
+                                <ul className="list-group list-group-flush">
+                                    {data.payments_stats.map((p, i) => (
+                                        <li key={i} className="list-group-item">
+                                            {p.method_name}: {p.total_amount.toFixed(2)} ₽
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
                     )}
                 </>
             )}
         </div>
+
     )
 }
 

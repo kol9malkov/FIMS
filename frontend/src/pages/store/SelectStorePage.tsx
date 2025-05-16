@@ -20,7 +20,7 @@ const SelectStorePage = () => {
 
     const handleSelect = (store: Store) => {
         setStoreId(store.store_id.toString())
-        localStorage.setItem('store_name', store.address) // 👈 добавь это
+        localStorage.setItem('store_name', store.address)
         navigate('/store')
     }
 
@@ -41,11 +41,12 @@ const SelectStorePage = () => {
 
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-            <div className="bg-white p-6 rounded shadow w-full max-w-md">
-                <h1 className="text-xl font-bold mb-4 text-center">Выберите магазин</h1>
+        <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light px-3">
+            <div className="bg-white shadow-sm rounded p-4 w-100" style={{maxWidth: '420px'}}>
+                <h2 className="text-center fw-bold mb-4 fs-4">Выберите магазин</h2>
+
                 <select
-                    className="w-full border p-2 rounded mb-4"
+                    className="form-select mb-4"
                     value={selectedStore}
                     onChange={(e) => setSelectedStore(e.target.value)}
                 >
@@ -56,9 +57,11 @@ const SelectStorePage = () => {
                         </option>
                     ))}
                 </select>
+
                 <button
                     onClick={handleSubmit}
-                    className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+                    className="btn btn-primary w-100"
+                    disabled={!selectedStore}
                 >
                     Начать смену
                 </button>

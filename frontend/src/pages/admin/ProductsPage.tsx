@@ -89,148 +89,163 @@ const ProductsPage = () => {
     }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Товары</h2>
-                <button
-                    onClick={openCreateModal}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
+        <div className="container py-4">
+            {/* Заголовок и кнопка */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="mb-0">Товары</h2>
+                <button className="btn btn-primary" onClick={openCreateModal}>
                     Добавить товар
                 </button>
             </div>
 
-            <input
-                type="text"
-                value={search}
-                onChange={e => {
-                    setSearch(e.target.value)
-                    setPage(1)
-                }}
-                placeholder="Поиск по названию, штрихкоду..."
-                className="border px-3 py-2 rounded w-full max-w-md mb-4"
-            />
+            {/* Поиск */}
+            <div className="mb-3">
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                    }}
+                    placeholder="Поиск по названию, штрихкоду..."
+                    className="form-control"
+                />
+            </div>
 
-            <table className="w-full border text-sm mb-4">
-                <thead className="bg-blue-100">
-                <tr>
-                    <th className="border p-2">ID</th>
-                    <th className="border p-2">Название</th>
-                    <th className="border p-2">Описание</th>
-                    <th className="border p-2">Цена</th>
-                    <th className="border p-2">Штрихкод</th>
-                    <th className="border p-2">Категория</th>
-                    <th className="border p-2">Действия</th>
-                </tr>
-                </thead>
-                <tbody>
-                {products.map(product => (
-                    <tr key={product.product_id} className="hover:bg-blue-50">
-                        <td className="border p-2">{product.product_id}</td>
-                        <td className="border p-2">{product.name}</td>
-                        <td className="border p-2">{product.description}</td>
-                        <td className="border p-2">{product.price}</td>
-                        <td className="border p-2">{product.barcode}</td>
-                        <td className="border p-2">{product.category_name}</td>
-                        <td className="border p-2">
-                            <button
-                                onClick={() => openEditModal(product)}
-                                className="text-blue-600 hover:underline mr-2"
-                            >
-                                Редактировать
-                            </button>
-                            <button
-                                onClick={() => handleDelete(product.product_id)}
-                                className="text-red-600 hover:underline"
-                            >
-                                Удалить
-                            </button>
-                        </td>
+            {/* Таблица */}
+            <div className="table-responsive">
+                <table className="table table-bordered table-hover text-sm">
+                    <thead className="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Описание</th>
+                        <th>Цена</th>
+                        <th>Штрихкод</th>
+                        <th>Категория</th>
+                        <th>Действия</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {products.map((product) => (
+                        <tr key={product.product_id}>
+                            <td>{product.product_id}</td>
+                            <td>{product.name}</td>
+                            <td>{product.description}</td>
+                            <td>{product.price}</td>
+                            <td>{product.barcode}</td>
+                            <td>{product.category_name}</td>
+                            <td>
+                                <div className="d-flex gap-2">
+                                    <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => openEditModal(product)}
+                                    >
+                                        Редактировать
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-outline-danger"
+                                        onClick={() => handleDelete(product.product_id)}
+                                    >
+                                        Удалить
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
 
-            <div className="flex justify-between">
+            {/* Пагинация */}
+            <div className="d-flex justify-content-between align-items-center mt-3">
                 <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                 >
                     ← Назад
                 </button>
-                <span className="text-sm text-gray-600">Страница {page}</span>
+                <span className="text-muted">Страница {page}</span>
                 <button
-                    onClick={() => setPage(p => p + 1)}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setPage((p) => p + 1)}
                     disabled={products.length < limit}
                 >
                     Вперёд →
                 </button>
             </div>
 
+            {/* Модалка */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {editingProductId ? 'Редактирование товара' : 'Новый товар'}
-                        </h3>
+                <div className="modal d-block" tabIndex={-1}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">
+                                    {editingProductId ? 'Редактирование товара' : 'Новый товар'}
+                                </h5>
+                                <button type="button" className="btn-close"
+                                        onClick={() => setIsModalOpen(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                {(['name', 'description', 'price', 'barcode'] as const).map((field) => (
+                                    <input
+                                        key={field}
+                                        type={field === 'price' ? 'number' : 'text'}
+                                        value={formData[field]?.toString() || ''}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                [field]:
+                                                    field === 'price' ? Number(e.target.value) : e.target.value,
+                                            })
+                                        }
+                                        placeholder={
+                                            field === 'name'
+                                                ? 'Название'
+                                                : field === 'description'
+                                                    ? 'Описание'
+                                                    : field === 'price'
+                                                        ? 'Цена'
+                                                        : 'Штрихкод'
+                                        }
+                                        className="form-control mb-3"
+                                    />
+                                ))}
 
-                        {(['name', 'description', 'price', 'barcode'] as const).map(field => (
-                            <input
-                                key={field}
-                                type={field === 'price' ? 'number' : 'text'}
-                                value={formData[field]?.toString() || ''}
-                                onChange={e =>
-                                    setFormData({
-                                        ...formData,
-                                        [field]: field === 'price' ? Number(e.target.value) : e.target.value
-                                    })
-                                }
-                                placeholder={
-                                    field === 'name'
-                                        ? 'Название'
-                                        : field === 'description'
-                                            ? 'Описание'
-                                            : field === 'price'
-                                                ? 'Цена'
-                                                : 'Штрихкод'
-                                }
-                                className="border p-2 rounded w-full mb-3"
-                            />
-                        ))}
-
-                        <select
-                            value={formData.category_id}
-                            onChange={e => setFormData({...formData, category_id: Number(e.target.value)})}
-                            className="border p-2 rounded w-full mb-4"
-                        >
-                            <option value={0}>Выберите категорию</option>
-                            {categories.map(c => (
-                                <option key={c.category_id} value={c.category_id}>
-                                    {c.name}
-                                </option>
-                            ))}
-                        </select>
-
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                            >
-                                Отмена
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                            >
-                                Сохранить
-                            </button>
+                                <select
+                                    value={formData.category_id}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            category_id: Number(e.target.value),
+                                        })
+                                    }
+                                    className="form-select mb-3"
+                                >
+                                    <option value={0}>Выберите категорию</option>
+                                    {categories.map((c) => (
+                                        <option key={c.category_id} value={c.category_id}>
+                                            {c.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
+                                    Отмена
+                                </button>
+                                <button className="btn btn-primary" onClick={handleSubmit}>
+                                    Сохранить
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
         </div>
+
     )
 }
 

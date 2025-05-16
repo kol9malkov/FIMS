@@ -54,21 +54,20 @@ const SupplyPage = () => {
     }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Поставки</h2>
-                <Link
-                    to="/store/supplies/create"
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
+        <div className="container py-4">
+            {/* Заголовок и кнопка */}
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h2 className="fw-bold mb-0">🚚 Поставки</h2>
+                <Link to="/store/supplies/create" className="btn btn-primary">
                     + Новая поставка
                 </Link>
             </div>
 
-            <div className="flex gap-2 mb-4">
+            {/* Фильтрация по статусу */}
+            <div className="d-flex flex-wrap gap-2 mb-3">
                 <button
                     onClick={() => setStatus('')}
-                    className={`px-3 py-1 rounded ${status === '' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                    className={`btn btn-sm ${status === '' ? 'btn-primary' : 'btn-outline-secondary'}`}
                 >
                     Все
                 </button>
@@ -79,90 +78,123 @@ const SupplyPage = () => {
                             setStatus(s)
                             setPage(1)
                         }}
-                        className={`px-3 py-1 rounded ${status === s ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                        className={`btn btn-sm ${status === s ? 'btn-primary' : 'btn-outline-secondary'}`}
                     >
                         {s}
                     </button>
                 ))}
             </div>
 
-            <input
-                type="text"
-                value={search}
-                onChange={handleSearch}
-                placeholder="Поиск по магазину, поставщику или статусу"
-                className="border px-3 py-2 rounded w-full max-w-md mb-4"
-            />
+            {/* Поиск */}
+            <div className="mb-3">
+                <input
+                    type="text"
+                    value={search}
+                    onChange={handleSearch}
+                    placeholder="Поиск по магазину, поставщику или статусу"
+                    className="form-control"
+                    style={{maxWidth: '400px'}}
+                />
+            </div>
 
-            {loading && <p>Загрузка...</p>}
-            {error && <p className="text-red-600">{error}</p>}
+            {/* Загрузка / ошибка */}
+            {loading && (
+                <div className="text-center text-muted py-4">
+                    <div className="spinner-border text-primary me-2" role="status"/>
+                    Загрузка...
+                </div>
+            )}
+            {error && (
+                <div className="alert alert-danger" role="alert">
+                    {error}
+                </div>
+            )}
 
+            {/* Таблица */}
             {!loading && !error && (
                 <>
-                    <table className="w-full border text-sm mb-4">
-                        <thead className="bg-blue-100">
-                        <tr>
-                            <th className="border p-2">ID</th>
-                            <th className="border p-2">Магазин</th>
-                            <th className="border p-2">Поставщик</th>
-                            <th className="border p-2">Дата</th>
-                            <th className="border p-2">Статус</th>
-                            <th className="border p-2">Позиций</th>
-                            <th className="border p-2">Действия</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {supplies.map((supply) => (
-                            <tr key={supply.supply_id} className="hover:bg-blue-50">
-                                <td className="border p-2">{supply.supply_id}</td>
-                                <td className="border p-2">{supply.store_name}</td>
-                                <td className="border p-2">{supply.supplier_name}</td>
-                                <td className="border p-2">{formatDate(supply.supply_date)}</td>
-                                <td className="border p-2">{supply.status}</td>
-                                <td className="border p-2">{supply.supply_items.length}</td>
-                                <td className="border p-2 space-x-2">
-                                    <Link
-                                        to={`/store/supplies/id/${supply.supply_id}`}
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        Детали
-                                    </Link>
-                                    {supply.status === 'Ожидается' ? (
-                                        <button
-                                            onClick={async () => {
-                                                try {
-                                                    await deliverSupply(supply.supply_id, storeId ?? undefined)
-                                                    await fetchData()
-                                                } catch (e: any) {
-                                                    alert(e?.response?.data?.detail || 'Ошибка при принятии поставки')
-                                                }
-                                            }}
-                                            className="text-green-600 hover:underline"
-                                        >
-                                            Принять
-                                        </button>
-                                    ) : (
-                                        <span className="text-gray-400 text-sm">✓</span>
-                                    )}
-                                </td>
+                    <div className="table-responsive mb-4">
+                        <table className="table table-hover table-striped align-middle text-sm">
+                            <thead className="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Магазин</th>
+                                <th>Поставщик</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                                <th>Позиций</th>
+                                <th>Действия</th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {supplies.map((supply) => (
+                                <tr key={supply.supply_id}>
+                                    <td>#{supply.supply_id}</td>
+                                    <td>{supply.store_name}</td>
+                                    <td>{supply.supplier_name}</td>
+                                    <td>{formatDate(supply.supply_date)}</td>
+                                    <td>
+                  <span
+                      className={`badge rounded-pill ${
+                          supply.status === 'Ожидается'
+                              ? 'bg-warning text-dark'
+                              : supply.status === 'Доставлено'
+                                  ? 'bg-info'
+                                  : supply.status === 'Принято'
+                                      ? 'bg-success'
+                                      : 'bg-secondary'
+                      }`}
+                  >
+                    {supply.status}
+                  </span>
+                                    </td>
+                                    <td>{supply.supply_items.length}</td>
+                                    <td>
+                                        <div className="d-flex gap-2 flex-wrap align-items-center">
+                                            <Link
+                                                to={`/store/supplies/id/${supply.supply_id}`}
+                                                className="btn btn-sm btn-outline-primary"
+                                            >
+                                                Детали
+                                            </Link>
+                                            {supply.status === 'Ожидается' ? (
+                                                <button
+                                                    className="btn btn-sm btn-outline-success"
+                                                    onClick={async () => {
+                                                        try {
+                                                            await deliverSupply(supply.supply_id, storeId ?? undefined)
+                                                            await fetchData()
+                                                        } catch (e: any) {
+                                                            alert(e?.response?.data?.detail || 'Ошибка при принятии поставки')
+                                                        }
+                                                    }}
+                                                >
+                                                    Принять
+                                                </button>
+                                            ) : (
+                                                <span className="text-muted small">✓</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
 
-
-                    <div className="flex justify-between">
+                    {/* Пагинация */}
+                    <div className="d-flex justify-content-between align-items-center">
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                            className="btn btn-outline-secondary"
                             disabled={page === 1}
                         >
                             ← Назад
                         </button>
-                        <span className="text-sm text-gray-600">Страница {page}</span>
+                        <span className="text-muted">Страница {page}</span>
                         <button
                             onClick={() => setPage((p) => p + 1)}
-                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                            className="btn btn-outline-secondary"
                             disabled={supplies.length < limit}
                         >
                             Вперёд →
@@ -171,6 +203,7 @@ const SupplyPage = () => {
                 </>
             )}
         </div>
+
     )
 }
 

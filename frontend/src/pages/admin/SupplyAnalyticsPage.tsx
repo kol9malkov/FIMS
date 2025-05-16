@@ -33,98 +33,128 @@ const SupplyAnalyticsPage = () => {
     }, [])
 
     return (
-        <div className="p-6 space-y-6">
-            <h1 className="text-3xl font-bold">Аналитика по поставкам</h1>
+        <div className="container py-4">
+            <h2 className="fw-bold mb-4 fs-3">Аналитика по поставкам</h2>
 
-            <div className="flex flex-wrap gap-4 items-end">
-                <div>
-                    <label className="block text-sm mb-1">Магазин</label>
+            {/* Фильтры */}
+            <form className="row gy-3 align-items-end mb-4">
+                <div className="col-md-3">
+                    <label className="form-label">Магазин</label>
                     <select
                         value={storeId}
                         onChange={(e) => setStoreId(e.target.value)}
-                        className="border px-2 py-1 rounded"
+                        className="form-select"
                     >
                         <option value="">Все магазины</option>
                         {stores.map((s) => (
-                            <option key={s.store_id} value={s.store_id}>{s.address}</option>
+                            <option key={s.store_id} value={s.store_id}>
+                                {s.address}
+                            </option>
                         ))}
                     </select>
                 </div>
 
-                <div>
-                    <label className="block text-sm mb-1">Дата от</label>
+                <div className="col-md-3">
+                    <label className="form-label">Дата от</label>
                     <input
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="border px-2 py-1 rounded"
+                        className="form-control"
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm mb-1">Дата до</label>
+                <div className="col-md-3">
+                    <label className="form-label">Дата до</label>
                     <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="border px-2 py-1 rounded"
+                        className="form-control"
                     />
                 </div>
 
-                <button
-                    onClick={fetchData}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    Обновить
-                </button>
-            </div>
+                <div className="col-md-3">
+                    <button
+                        type="button"
+                        onClick={fetchData}
+                        className="btn btn-primary w-100"
+                    >
+                        Обновить
+                    </button>
+                </div>
+            </form>
 
-            {loading && <p className="text-gray-500">Загрузка...</p>}
+            {/* Загрузка */}
+            {loading && <p className="text-muted">Загрузка...</p>}
+
+            {/* Данные */}
             {!loading && data && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 bg-blue-100 rounded shadow">
-                            <p className="text-gray-700">Всего поставок</p>
-                            <p className="text-2xl font-bold">{data.total_supplies}</p>
+                    {/* Карточки */}
+                    <div className="row g-3 mb-4">
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0 bg-light">
+                                <div className="card-body">
+                                    <p className="text-muted mb-1">Всего поставок</p>
+                                    <h4 className="fw-bold">{data.total_supplies}</h4>
+                                </div>
+                            </div>
                         </div>
-                        <div className="p-4 bg-green-100 rounded shadow">
-                            <p className="text-gray-700">Всего позиций</p>
-                            <p className="text-2xl font-bold">{data.total_items}</p>
+
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0 bg-light">
+                                <div className="card-body">
+                                    <p className="text-muted mb-1">Всего позиций</p>
+                                    <h4 className="fw-bold">{data.total_items}</h4>
+                                </div>
+                            </div>
                         </div>
-                        <div className="p-4 bg-yellow-100 rounded shadow">
-                            <p className="text-gray-700">Общая стоимость</p>
-                            <p className="text-2xl font-bold">{data.total_cost.toLocaleString()} ₽</p>
+
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0 bg-light">
+                                <div className="card-body">
+                                    <p className="text-muted mb-1">Общая стоимость</p>
+                                    <h4 className="fw-bold">{data.total_cost.toLocaleString()} ₽</h4>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded shadow">
-                        <h2 className="text-xl font-semibold mb-2">Статистика по магазинам</h2>
-                        <table className="w-full border border-gray-300 text-sm">
-                            <thead className="bg-gray-100">
-                            <tr>
-                                <th className="border p-2 text-left">ID</th>
-                                <th className="border p-2 text-left">Адрес</th>
-                                <th className="border p-2 text-right">Поставок</th>
-                                <th className="border p-2 text-right">Позиций</th>
-                                <th className="border p-2 text-right">Стоимость</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {data.supplies_per_store.map((store: any) => (
-                                <tr key={store.store_id} className="hover:bg-gray-50">
-                                    <td className="border p-2">{store.store_id}</td>
-                                    <td className="border p-2">{store.store_address}</td>
-                                    <td className="border p-2 text-right">{store.count}</td>
-                                    <td className="border p-2 text-right">{store.total_items}</td>
-                                    <td className="border p-2 text-right">{store.total_cost.toLocaleString()} ₽</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                    {/* Таблица */}
+                    <div className="card shadow-sm border-0">
+                        <div className="card-body">
+                            <h5 className="fw-semibold mb-3">Статистика по магазинам</h5>
+                            <div className="table-responsive">
+                                <table className="table table-bordered table-hover align-middle text-sm">
+                                    <thead className="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Адрес</th>
+                                        <th className="text-end">Поставок</th>
+                                        <th className="text-end">Позиций</th>
+                                        <th className="text-end">Стоимость</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {data.supplies_per_store.map((store: any) => (
+                                        <tr key={store.store_id}>
+                                            <td>{store.store_id}</td>
+                                            <td>{store.store_address}</td>
+                                            <td className="text-end">{store.count}</td>
+                                            <td className="text-end">{store.total_items}</td>
+                                            <td className="text-end">{store.total_cost.toLocaleString()} ₽</td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </>
             )}
         </div>
+
     )
 }
 
