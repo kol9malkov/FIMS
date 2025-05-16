@@ -1,23 +1,31 @@
-import React, {useEffect, useState} from 'react'
+import {useEffect, useState} from 'react'
 import {Link} from 'react-router-dom'
-import {getSupplies, type Supply} from '@/api/supplies'
+import {useAuth} from '@/contexts/AuthContext'
+import {STATUSES, getSupplies, type Supply, type SupplyStatus, deliverSupply} from '@/api/supplies'
+
 
 const SupplyPage = () => {
+    const {storeId, role} = useAuth()
+    const isAdmin = role === 'Администратор'
+
     const [supplies, setSupplies] = useState<Supply[]>([])
     const [search, setSearch] = useState('')
+    const [status, setStatus] = useState<SupplyStatus | ''>('') // строгая типизация
     const [page, setPage] = useState(1)
     const [limit] = useState(10)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    const storeId = localStorage.getItem('store_id') || ''
-    const role = localStorage.getItem('role')
-    const isAdmin = role === 'Администратор'
-
     const fetchData = async () => {
         setLoading(true)
         try {
-            const data = await getSupplies(search, page, limit, isAdmin ? undefined : storeId)
+            const data = await getSupplies(
+                search,
+                page,
+                limit,
+                isAdmin ? undefined : storeId || undefined,
+                status || undefined
+            )
             setSupplies(data)
             setError(null)
         } catch {
@@ -29,7 +37,7 @@ const SupplyPage = () => {
 
     useEffect(() => {
         fetchData()
-    }, [search, page])
+    }, [search, page, status, storeId])
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value)
@@ -57,6 +65,27 @@ const SupplyPage = () => {
                 </Link>
             </div>
 
+            <div className="flex gap-2 mb-4">
+                <button
+                    onClick={() => setStatus('')}
+                    className={`px-3 py-1 rounded ${status === '' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                >
+                    Все
+                </button>
+                {STATUSES.map((s) => (
+                    <button
+                        key={s}
+                        onClick={() => {
+                            setStatus(s)
+                            setPage(1)
+                        }}
+                        className={`px-3 py-1 rounded ${status === s ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                    >
+                        {s}
+                    </button>
+                ))}
+            </div>
+
             <input
                 type="text"
                 value={search}
@@ -79,10 +108,11 @@ const SupplyPage = () => {
                             <th className="border p-2">Дата</th>
                             <th className="border p-2">Статус</th>
                             <th className="border p-2">Позиций</th>
+                            <th className="border p-2">Действия</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {supplies.map(supply => (
+                        {supplies.map((supply) => (
                             <tr key={supply.supply_id} className="hover:bg-blue-50">
                                 <td className="border p-2">{supply.supply_id}</td>
                                 <td className="border p-2">{supply.store_name}</td>
@@ -90,14 +120,40 @@ const SupplyPage = () => {
                                 <td className="border p-2">{formatDate(supply.supply_date)}</td>
                                 <td className="border p-2">{supply.status}</td>
                                 <td className="border p-2">{supply.supply_items.length}</td>
+                                <td className="border p-2 space-x-2">
+                                    <Link
+                                        to={`/store/supplies/id/${supply.supply_id}`}
+                                        className="text-blue-600 hover:underline"
+                                    >
+                                        Детали
+                                    </Link>
+                                    {supply.status === 'Ожидается' ? (
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await deliverSupply(supply.supply_id, storeId ?? undefined)
+                                                    await fetchData()
+                                                } catch (e: any) {
+                                                    alert(e?.response?.data?.detail || 'Ошибка при принятии поставки')
+                                                }
+                                            }}
+                                            className="text-green-600 hover:underline"
+                                        >
+                                            Принять
+                                        </button>
+                                    ) : (
+                                        <span className="text-gray-400 text-sm">✓</span>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                         </tbody>
                     </table>
 
+
                     <div className="flex justify-between">
                         <button
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
                             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
                             disabled={page === 1}
                         >
@@ -105,7 +161,7 @@ const SupplyPage = () => {
                         </button>
                         <span className="text-sm text-gray-600">Страница {page}</span>
                         <button
-                            onClick={() => setPage(p => p + 1)}
+                            onClick={() => setPage((p) => p + 1)}
                             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
                             disabled={supplies.length < limit}
                         >

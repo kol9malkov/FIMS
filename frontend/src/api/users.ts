@@ -17,7 +17,9 @@ export interface CreateUserPayload {
     username: string
     password: string
     role_id: number
+    employee_id: number
 }
+
 
 export interface UpdateUserPayload {
     username?: string

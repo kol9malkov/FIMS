@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from crud import payment_methods as crud_payment_methods
+from dependencies.dependence import admin_required, all_roles_required
 from schemas import PaymentMethodResponse, PaymentMethodCreate, PaymentMethodUpdate
 from utils import get_db
 
 router = APIRouter()
 
 
-@router.post("/create", response_model=PaymentMethodResponse)
+@router.post("/create", response_model=PaymentMethodResponse, dependencies=[Depends(admin_required)])
 def create_payment_method(payment_method: PaymentMethodCreate, db: Session = Depends(get_db)):
     db_payment_method = crud_payment_methods.get_payment_method_by_name(db, payment_method.method_name)
     if db_payment_method:
@@ -15,13 +16,13 @@ def create_payment_method(payment_method: PaymentMethodCreate, db: Session = Dep
     return crud_payment_methods.create_payment_method(db, payment_method)
 
 
-@router.get("/", response_model=list[PaymentMethodResponse])
+@router.get("/", response_model=list[PaymentMethodResponse], dependencies=[Depends(all_roles_required)])
 def get_payment_methods(db: Session = Depends(get_db)):
     db_payment_method = crud_payment_methods.get_all_payment_methods(db)
     return db_payment_method
 
 
-@router.get("/id/{payment_id}", response_model=PaymentMethodResponse)
+@router.get("/id/{payment_id}", response_model=PaymentMethodResponse, dependencies=[Depends(all_roles_required)])
 def get_payment_method(payment_method_id: int, db: Session = Depends(get_db)):
     db_payment_method = crud_payment_methods.get_payment_method_by_id(db, payment_method_id)
     if not db_payment_method:
@@ -29,7 +30,7 @@ def get_payment_method(payment_method_id: int, db: Session = Depends(get_db)):
     return db_payment_method
 
 
-@router.put("/{payment_id}", response_model=PaymentMethodResponse)
+@router.put("/{payment_id}", response_model=PaymentMethodResponse, dependencies=[Depends(admin_required)])
 def update_payment(payment_id: int, payment: PaymentMethodUpdate, db: Session = Depends(get_db)):
     db_payment = crud_payment_methods.get_payment_method_by_id(db, payment_id)
     if not db_payment:
@@ -40,7 +41,7 @@ def update_payment(payment_id: int, payment: PaymentMethodUpdate, db: Session = 
     return crud_payment_methods.update_payment(db, db_payment, payment)
 
 
-@router.delete("/{payment_id}", status_code=204)
+@router.delete("/{payment_id}", status_code=204, dependencies=[Depends(admin_required)])
 def delete_payment_by_id(payment_id: int, db: Session = Depends(get_db)):
     if not crud_payment_methods.delete_payment(db, payment_id):
         raise HTTPException(status_code=404, detail="Способ оплаты не найден")

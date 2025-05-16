@@ -10,19 +10,30 @@ import CategoriesPage from './pages/admin/CategoriesPage'
 import ProductsPage from './pages/admin/ProductsPage'
 import PaymentMethodsPage from './pages/admin/PaymentMethodsPage'
 import SupplyAnalyticsPage from './pages/admin/SupplyAnalyticsPage'
-import StockPage from './pages/StockPage'
-import SupplyPage from './pages/SupplyPage'
-import StorePage from './pages/StorePage'
-import SalesAnalyticsPage from "@/pages/admin/SalesAnalyticsPage";
+import SalesAnalyticsPage from './pages/admin/SalesAnalyticsPage'
+import StockPage from './pages/store/StockPage'
+import SupplyPage from './pages/store/SupplyPage'
+import StorePage from './pages/store/StorePage'
+import SelectStorePage from './pages/store/SelectStorePage'
+import CreateSupplyPage from './pages/store/CreateSupplyPage'
+import SupplyDetailPage from './pages/store/SupplyDetailPage'
+import CashierPage from './pages/cashier/CashierPage'
+import RequireStore from './components/RequireStore'
+import RequireAuth from './components/RequireAuth'
+import CashierPanel from "@/components/cashier/CashierPanel";
+import {CashierSummaryPage} from "@/pages/cashier/CashierSummaryPage";
+import {CashierSalesPage} from "@/pages/cashier/CashierSalesPage";
+import CashierSaleDetailPage from "@/pages/cashier/CashierSaleDetailPage";
 
 function App() {
     const {isAuthenticated, role, loading} = useAuth()
 
-    if (loading) {
-        return <div className="p-6 text-center">Загрузка...</div>
-    }
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-blue-600 text-lg font-semibold animate-pulse">Загрузка...</div>
+        </div>
+    )
 
-    // 🔁 Универсальный редирект при входе по неизвестному пути
     const getDefaultRoute = () => {
         if (!isAuthenticated) return <Navigate to="/login" replace/>
         if (role === 'Администратор') return <Navigate to="/admin" replace/>
@@ -37,12 +48,7 @@ function App() {
             <Route path="/login" element={<LoginPage/>}/>
 
             {/* Админ-панель */}
-            <Route
-                path="/admin"
-                element={
-                    isAuthenticated ? <AdminPage/> : <Navigate to="/login" replace/>
-                }
-            >
+            <Route path="/admin" element={isAuthenticated ? <AdminPage/> : <Navigate to="/login" replace/>}>
                 <Route path="employees" element={<EmployeesPage/>}/>
                 <Route path="roles" element={<RolesPage/>}/>
                 <Route path="users" element={<UsersPage/>}/>
@@ -55,17 +61,30 @@ function App() {
             </Route>
 
             {/* Складская панель */}
-            <Route
-                path="/store"
-                element={
-                    isAuthenticated ? <StorePage/> : <Navigate to="/login" replace/>
-                }
-            >
-                <Route path="stocks" element={<StockPage/>}/>
-                <Route path="supplies" element={<SupplyPage/>}/>
+            <Route element={<RequireAuth/>}>
+                <Route path="/store" element={<StorePage/>}>
+                    <Route path="select" element={<SelectStorePage/>}/>
+                    <Route element={<RequireStore/>}>
+                        <Route path="supplies" element={<SupplyPage/>}/>
+                        <Route path="stocks" element={<StockPage/>}/>
+                        <Route path="supplies/create" element={<CreateSupplyPage/>}/>
+                        <Route path="supplies/id/:supplyId" element={<SupplyDetailPage/>}/>
+                    </Route>
+                </Route>
+
+                {/* Кассовая панель */}
+                <Route path="/cashier" element={<CashierPage/>}>
+                    <Route element={<RequireStore/>}>
+                        <Route index element={<CashierPanel/>}/>
+                        <Route path="summary" element={<CashierSummaryPage/>}/>
+                        <Route path="sales" element={<CashierSalesPage/>}/>
+                        <Route path="/cashier/sales/:saleId" element={<CashierSaleDetailPage />} />
+                    </Route>
+                </Route>
+
             </Route>
 
-            {/* Всё остальное → перенаправление по роли или на /login */}
+            {/* Универсальный редирект */}
             <Route path="*" element={getDefaultRoute()}/>
         </Routes>
     )

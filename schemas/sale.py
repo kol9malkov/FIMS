@@ -3,8 +3,10 @@ from datetime import datetime
 
 
 # --- Вход ---
-class SaleItemByBarcode(BaseModel):
-    barcode: str
+class SaleItemCreate(BaseModel):
+    product_id: int
+    quantity: int
+    price: float
 
 
 class PaymentCreate(BaseModel):
@@ -13,8 +15,18 @@ class PaymentCreate(BaseModel):
 
 
 class SaleCreate(BaseModel):
-    sale_items: list[SaleItemByBarcode]
+    sale_items: list[SaleItemCreate]
     payments: list[PaymentCreate]
+
+
+class SaleSummary(BaseModel):
+    sale_id: int
+    datetime: datetime
+    amount: float
+    payment_method: str
+
+    class Config:
+        orm_mode = True
 
 
 # --- Выход ---
@@ -47,3 +59,10 @@ class SaleResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class SummaryResponse(BaseModel):
+    date: str
+    total_cash: float
+    total_card: float
+    sales: list[SaleSummary]

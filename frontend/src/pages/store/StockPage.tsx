@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react'
 import {getStocks, type Stock} from '@/api/stock'
+import {useAuth} from "@/contexts/AuthContext";
 
 const StockPage = () => {
     const [stocks, setStocks] = useState<Stock[]>([])
@@ -9,10 +10,12 @@ const StockPage = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
+    const {storeId} = useAuth()
+
     const fetchStocks = async () => {
         setLoading(true)
         try {
-            const data = await getStocks(search, page, limit)
+            const data = await getStocks(search, page, limit, storeId ?? undefined) // 👈 передаём storeId
             setStocks(data)
         } catch {
             setError('Ошибка загрузки остатков')

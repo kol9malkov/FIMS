@@ -21,12 +21,13 @@ def get_stock_by_id(db: Session, stock_id: int, ) -> Stock | None:
     return db.query(Stock).filter(Stock.stock_id == stock_id).first()
 
 
-def get_all_stocks(db: Session, skip: int = 0, limit: int = 15, search: str = ''):
+def get_all_stocks(db: Session, store_id: int, skip: int = 0, limit: int = 15, search: str = ''):
     query = (
         db.query(Stock)
         .join(Product)
         .join(Store)
         .options(joinedload(Stock.product), joinedload(Stock.store))
+        .filter(Stock.store_id == store_id)  # 👈 фильтрация по текущему магазину
     )
 
     if search:

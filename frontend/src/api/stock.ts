@@ -13,12 +13,25 @@ export interface Stock {
 export const getStocks = async (
     search: string,
     page: number,
-    limit: number
+    limit: number,
+    storeId?: string
 ): Promise<Stock[]> => {
     const skip = (page - 1) * limit
 
+    const params = {
+        search,
+        skip: skip.toString(),
+        limit: limit.toString(),
+    }
+
+    const headers: Record<string, string> = {}
+    if (storeId) {
+        headers['X-Store-ID'] = storeId
+    }
+
     const response = await api.get<Stock[]>('/store/stocks', {
-        params: {search, skip, limit}
+        params,
+        headers,
     })
 
     return response.data

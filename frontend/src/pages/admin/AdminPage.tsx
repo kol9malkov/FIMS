@@ -1,15 +1,7 @@
-import Navbar from '../../components/Navbar'
-import { Outlet } from 'react-router-dom'
+import AdminPanel from "@/components/admin/AdminPanel";
 
 const AdminPage = () => {
-  return (
-    <div>
-      <Navbar />
-      <main className="p-6">
-        <Outlet />
-      </main>
-    </div>
-  )
+    return <AdminPanel/>
 }
 
 export default AdminPage

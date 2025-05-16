@@ -8,10 +8,12 @@ import {
     type User,
     type RoleOption,
 } from '@/api/users'
+import {getEmployees, type Employee} from '@/api/employees'
 
 const UsersPage = () => {
     const [users, setUsers] = useState<User[]>([])
     const [roles, setRoles] = useState<RoleOption[]>([])
+    const [employees, setEmployees] = useState<Employee[]>([])
 
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
@@ -24,15 +26,22 @@ const UsersPage = () => {
         username: '',
         password: '',
         role_id: '',
+        employee_id: '',
     })
-
 
     const fetchData = async () => {
         try {
-            const users = await getUsers(search, page, limit)
-            const roles = await getRoles()
+            const [users, roles, allEmployees] = await Promise.all([
+                getUsers(search, page, limit),
+                getRoles(),
+                getEmployees('', 1, 1000),
+            ])
             setUsers(users)
             setRoles(roles)
+
+            const usedEmployeeIds = new Set(users.map(u => u.user_id))
+            const available = allEmployees.filter(e => !usedEmployeeIds.has(e.employee_id))
+            setEmployees(available)
         } catch {
             alert('Ошибка при загрузке данных')
         }
@@ -44,7 +53,7 @@ const UsersPage = () => {
 
     const openCreateModal = () => {
         setEditingUserId(null)
-        setFormData({username: '', password: '', role_id: ''})
+        setFormData({username: '', password: '', role_id: '', employee_id: ''})
         setIsModalOpen(true)
     }
 
@@ -55,6 +64,7 @@ const UsersPage = () => {
             username: user.username,
             password: '',
             role_id: role ? String(role.role_id) : '',
+            employee_id: '',
         })
         setIsModalOpen(true)
     }
@@ -72,6 +82,7 @@ const UsersPage = () => {
                     username: formData.username,
                     password: formData.password,
                     role_id: Number(formData.role_id),
+                    employee_id: Number(formData.employee_id),
                 })
             }
 
@@ -193,7 +204,7 @@ const UsersPage = () => {
                             name="role_id"
                             value={formData.role_id}
                             onChange={e => setFormData({...formData, role_id: e.target.value})}
-                            className="border p-2 rounded w-full mb-4"
+                            className="border p-2 rounded w-full mb-3"
                         >
                             <option value="">Выберите роль</option>
                             {roles.map(role => (
@@ -202,6 +213,21 @@ const UsersPage = () => {
                                 </option>
                             ))}
                         </select>
+                        {!editingUserId && (
+                            <select
+                                name="employee_id"
+                                value={formData.employee_id}
+                                onChange={e => setFormData({...formData, employee_id: e.target.value})}
+                                className="border p-2 rounded w-full mb-4"
+                            >
+                                <option value="">Выберите сотрудника</option>
+                                {employees.map(emp => (
+                                    <option key={emp.employee_id} value={emp.employee_id}>
+                                        {emp.first_name} {emp.last_name} — {emp.position}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                         <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setIsModalOpen(false)}

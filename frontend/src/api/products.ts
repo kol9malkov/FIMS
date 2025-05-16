@@ -32,6 +32,11 @@ export const getProducts = async (
     return response.data
 }
 
+export const getProductByBarcode = async (barcode: string): Promise<Product> => {
+    const response = await api.get<Product>(`${API_URL}/barcode/${barcode}`)
+    return response.data
+}
+
 export const createProduct = async (
     payload: ProductPayload
 ): Promise<void> => {

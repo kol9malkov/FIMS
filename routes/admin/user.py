@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import crud.user as crud_user
+from dependencies.dependence import admin_required
 from schemas import UserCreate, UserUpdate, UserResponse
 from utils import get_db
 
 router = APIRouter()
 
 
-@router.post("/create", response_model=UserResponse)
+@router.post("/create", response_model=UserResponse, dependencies=[Depends(admin_required)])
 def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     db_user = crud_user.get_user_by_username(db, user_in.username)
     if db_user:
@@ -20,7 +21,7 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/", response_model=list[UserResponse])
+@router.get("/", response_model=list[UserResponse], dependencies=[Depends(admin_required)])
 def get_all_users(skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db)):
     users = crud_user.get_all_users(db, skip=skip, limit=limit, search=search)
     return [
@@ -33,7 +34,7 @@ def get_all_users(skip: int = 0, limit: int = 15, search: str = '', db: Session 
     ]
 
 
-@router.get("/id/{user_id}", response_model=UserResponse)
+@router.get("/id/{user_id}", response_model=UserResponse, dependencies=[Depends(admin_required)])
 def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     user = crud_user.get_user_by_id(db, user_id)
     return UserResponse(
@@ -43,7 +44,7 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/username/{username}", response_model=UserResponse)
+@router.get("/username/{username}", response_model=UserResponse, dependencies=[Depends(admin_required)])
 def get_user_by_username(username: str, db: Session = Depends(get_db)):
     user = crud_user.get_user_by_username(db, username)
     return UserResponse(
@@ -53,7 +54,7 @@ def get_user_by_username(username: str, db: Session = Depends(get_db)):
     )
 
 
-@router.put("/{user_id}", response_model=UserResponse)
+@router.put("/{user_id}", response_model=UserResponse, dependencies=[Depends(admin_required)])
 def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)):
     db_user = crud_user.get_user_by_id(db, user_id)
     if not db_user:
@@ -66,7 +67,7 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
     )
 
 
-@router.delete("/{user_id}", status_code=204)
+@router.delete("/{user_id}", status_code=204, dependencies=[Depends(admin_required)])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud_user.delete_user(db, user_id)
     if not db_user:

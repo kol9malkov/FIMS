@@ -9,7 +9,7 @@ from utils import get_db
 router = APIRouter()
 
 
-@router.post("/create", response_model=StoreResponse)
+@router.post("/create", response_model=StoreResponse, dependencies=[Depends(admin_required)])
 def create_store(store: StoreCreate, db: Session = Depends(get_db)):
     db_store = crud_store.get_store_by_address(db, address=store.address)
     if db_store:
@@ -30,7 +30,7 @@ def get_store(store_id: int, db: Session = Depends(get_db)):
     return db_store
 
 
-@router.put("/{store_id}", response_model=StoreResponse)
+@router.put("/{store_id}", response_model=StoreResponse, dependencies=[Depends(admin_required)])
 def update_store(store_id: int, store: StoreUpdate, db: Session = Depends(get_db)):
     db_store = crud_store.get_store_by_id(db, store_id)
     if not db_store:
@@ -42,7 +42,7 @@ def update_store(store_id: int, store: StoreUpdate, db: Session = Depends(get_db
     return crud_store.update_store(db, db_store, store)
 
 
-@router.delete("/{store_id}", status_code=204)
+@router.delete("/{store_id}", status_code=204, dependencies=[Depends(admin_required)])
 def delete_store(store_id: int, db: Session = Depends(get_db)):
     if not crud_store.delete_store(db, store_id):
         raise HTTPException(status_code=404, detail="Магазин не найден")

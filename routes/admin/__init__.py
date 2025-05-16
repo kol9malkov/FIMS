@@ -9,8 +9,7 @@ from .category import router as category_router
 from .product import router as product_router
 from dependencies.dependence import admin_required
 
-router = APIRouter(prefix="/admin")  # тестовая
-# router = APIRouter(prefix="/admin", dependencies=[Depends(admin_required)])
+router = APIRouter(prefix="/admin")
 
 router.include_router(employee_router, prefix="/employees", tags=["Admin - Employee"])
 router.include_router(role_router, prefix="/roles", tags=["Admin - Role"])

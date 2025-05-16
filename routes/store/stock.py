@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from dependencies.dependence import admin_required, store_required
+from dependencies.dependence import admin_required, store_required, get_store_id, all_roles_required
 from schemas import StockCreate, StockUpdate, StockResponse, StockSummaryResponse, StockStoryResponse
 from crud import stock as crud_stock
 from utils import get_db
@@ -20,13 +20,14 @@ def create_stock(stock: StockCreate, db: Session = Depends(get_db)):
     return to_stock_response(created_stock)
 
 
-@router.get("/", response_model=list[StockResponse])
-def get_stocks(skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db)):
-    stocks = crud_stock.get_all_stocks(db, skip=skip, limit=limit, search=search)
+@router.get("/", response_model=list[StockResponse], dependencies=[Depends(all_roles_required)])
+def get_stocks(skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db),
+               store_id: int = Depends(get_store_id)):
+    stocks = crud_stock.get_all_stocks(db, skip=skip, limit=limit, search=search, store_id=store_id)
     return [to_stock_response(s) for s in stocks]
 
 
-@router.get("/id/{stock_id}", response_model=StockResponse)
+@router.get("/id/{stock_id}", response_model=StockResponse, dependencies=[Depends(all_roles_required)])
 def get_stock(stock_id: int, db: Session = Depends(get_db)):
     db_stock = crud_stock.get_stock_by_id(db, stock_id)
     if not db_stock:
@@ -34,7 +35,7 @@ def get_stock(stock_id: int, db: Session = Depends(get_db)):
     return to_stock_response(db_stock)
 
 
-@router.get("/store/{store_id}", response_model=list[StockStoryResponse])
+@router.get("/store/{store_id}", response_model=list[StockStoryResponse], dependencies=[Depends(store_required)])
 def get_stock_by_store(store_id: int, skip: int = 0, limit: int = 15, search: str = '', db: Session = Depends(get_db)):
     """Получить все остатки товаров в конкретном магазине"""
     db_stocks = crud_stock.get_stock_by_store(db, store_id, skip=skip, limit=limit, search=search)
@@ -50,7 +51,7 @@ def get_stock_by_store(store_id: int, skip: int = 0, limit: int = 15, search: st
     ]
 
 
-@router.get("/stock-summary", response_model=list[StockSummaryResponse])
+@router.get("/stock-summary", response_model=list[StockSummaryResponse], dependencies=[Depends(store_required)])
 def get_stock_summary(
         db: Session = Depends(get_db),
         category_id: Optional[int] = None,
@@ -68,7 +69,7 @@ def get_stock_summary(
     ]
 
 
-@router.put("/{stock_id}", response_model=StockResponse)
+@router.put("/{stock_id}", response_model=StockResponse, dependencies=[Depends(store_required)])
 def update_stock(stock_id: int, stock: StockUpdate, db: Session = Depends(get_db)):
     db_stock = crud_stock.get_stock_by_id(db, stock_id)
     if not db_stock:

@@ -6,6 +6,10 @@ from crud import product as crud_product
 from crud import stock as crud_stock
 
 
+class SupplyNotDeliverableError(Exception):
+    pass
+
+
 def existing_supply(db: Session, supply: SupplyCreate) -> Supply | None:
     # Ищем существующую поставку по store_id, supply_date и supplier_name
     return db.query(Supply).filter(
@@ -47,7 +51,14 @@ def get_supply_by_id(db: Session, supply_id: int):
     return db.query(Supply).filter(Supply.supply_id == supply_id).first()
 
 
-def get_all_supplies(db: Session, skip: int = 0, limit: int = 20, search: str = ''):
+def get_all_supplies(
+        db: Session,
+        skip: int = 0,
+        limit: int = 20,
+        search: str = '',
+        status: str | None = None,
+        store_id: int | None = None,
+):
     query = (
         db.query(Supply)
         .join(Store, Supply.store_id == Store.store_id)
@@ -57,19 +68,31 @@ def get_all_supplies(db: Session, skip: int = 0, limit: int = 20, search: str = 
         )
     )
 
+    if store_id:
+        query = query.filter(Supply.store_id == store_id)
+
     if search:
+        ilike = f"%{search}%"
         query = query.filter(
             or_(
-                Supply.supplier_name.ilike(f'%{search}%'),
-                Store.address.ilike(f'%{search}%'),
-                Supply.status.ilike(f'%{search}%')
+                Supply.supplier_name.ilike(ilike),
+                Store.address.ilike(ilike),
+                Supply.status.ilike(ilike)
             )
         )
+
+    if status:
+        query = query.filter(Supply.status == status)
+        # Или нечувствительно к регистру:
+        # query = query.filter(func.lower(Supply.status) == status.lower())
 
     return query.order_by(Supply.supply_date.desc()).offset(skip).limit(limit).all()
 
 
 def update_supply_item(db: Session, db_supply: Supply, supply_item_id: int, update_item: SupplyItemUpdate):
+    if db_supply.status == SupplyStatusEnum.PENDING:
+        raise SupplyNotDeliverableError("Поставка ещё не доставлена")
+
     item = next((i for i in db_supply.supply_items if i.supply_item_id == supply_item_id), None)
     if not item:
         return None

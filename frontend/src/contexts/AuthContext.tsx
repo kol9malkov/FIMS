@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import {
     createContext,
     useContext,
@@ -13,9 +14,13 @@ interface AuthContextType {
     username: string
     role: string
     login: (username: string, password: string) => Promise<void>
+    storeId: string | null
+    setStoreId: (id: string) => void
+    clearStore: () => void
     logout: () => void
     loading: boolean
 }
+
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
@@ -26,10 +31,24 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
+    const [storeId, setStoreIdState] = useState<string | null>(localStorage.getItem('store_id'))
+
+    const setStoreId = (id: string) => {
+        localStorage.setItem('store_id', id)
+        setStoreIdState(id)
+    }
+
+    const clearStore = () => {
+        localStorage.removeItem('store_id')
+        setStoreIdState(null)
+    }
+
+
     useEffect(() => {
         const token = localStorage.getItem('access_token')
         const savedUsername = localStorage.getItem('username')
         const savedRole = localStorage.getItem('role')
+
 
         if (token && savedUsername && savedRole) {
             setIsAuthenticated(true)
@@ -51,22 +70,33 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
         setRole(data.role)
 
         if (data.role === 'Администратор') navigate('/admin')
-        else if (data.role === 'Склад') navigate('/store')
-        else if (data.role === 'Кассир') navigate('/cashier')
+        else if (data.role === 'Склад' || data.role === 'Кассир') navigate('/store/select')
         else navigate('/login')
     }
+
 
     const logout = () => {
         localStorage.clear()
         setIsAuthenticated(false)
         setUsername('')
         setRole('')
+        clearStore()
         navigate('/login')
     }
 
     return (
         <AuthContext.Provider
-            value={{isAuthenticated, username, role, login, logout, loading}}
+            value={{
+                isAuthenticated,
+                username,
+                role,
+                login,
+                logout,
+                storeId,
+                setStoreId,
+                clearStore,
+                loading,
+            }}
         >
             {children}
         </AuthContext.Provider>
