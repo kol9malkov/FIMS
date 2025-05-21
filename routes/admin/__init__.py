@@ -7,7 +7,6 @@ from .analytics import router as analytics_router
 from .payment_method import router as payment_method_router
 from .category import router as category_router
 from .product import router as product_router
-from dependencies.dependence import admin_required
 
 router = APIRouter(prefix="/admin")
 
