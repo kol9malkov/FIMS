@@ -13,7 +13,7 @@ export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
 }
 
 export const createPaymentMethod = async (name: string): Promise<void> => {
-    await api.post(`${API_URL}/create`, {name})
+    await api.post(`${API_URL}/create`, {method_name: name})
 }
 
 export const updatePaymentMethod = async (

@@ -9,7 +9,13 @@ import {
 
 const PaymentMethodsPage = () => {
     const [methods, setMethods] = useState<PaymentMethod[]>([])
+    const [search, setSearch] = useState('')
     const [newName, setNewName] = useState('')
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const [editId, setEditId] = useState<number | null>(null)
+    const [editName, setEditName] = useState('')
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
     const fetchData = async () => {
         const data = await getPaymentMethods()
@@ -20,18 +26,36 @@ const PaymentMethodsPage = () => {
         fetchData()
     }, [])
 
-    const handleCreate = async () => {
-        if (!newName.trim()) return
-        await createPaymentMethod(newName)
+    const openCreateModal = () => {
         setNewName('')
-        await fetchData()
+        setIsModalOpen(true)
     }
 
-    const handleUpdate = async (id: number, name: string) => {
-        const newLabel = prompt('Новое имя метода оплаты:', name)
-        if (newLabel && newLabel !== name) {
-            await updatePaymentMethod(id, newLabel)
+    const handleCreate = async () => {
+        if (!newName.trim()) return
+        try {
+            await createPaymentMethod(newName)
             await fetchData()
+            setIsModalOpen(false)
+        } catch {
+            alert('Ошибка при добавлении метода оплаты')
+        }
+    }
+
+    const openEditModal = (id: number, currentName: string) => {
+        setEditId(id)
+        setEditName(currentName)
+        setIsEditModalOpen(true)
+    }
+
+    const handleEditSubmit = async () => {
+        if (!editName.trim() || editId === null) return
+        try {
+            await updatePaymentMethod(editId, editName)
+            await fetchData()
+            setIsEditModalOpen(false)
+        } catch {
+            alert('Ошибка при редактировании')
         }
     }
 
@@ -42,22 +66,29 @@ const PaymentMethodsPage = () => {
         }
     }
 
+    const filteredMethods = methods.filter(m =>
+        m.method_name.toLowerCase().includes(search.toLowerCase())
+    )
+
     return (
         <div className="container py-4">
-            <h2 className="mb-4 fw-bold">Методы оплаты</h2>
+            {/* Заголовок и панель управления */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h2 className="mb-0 fw-bold">Методы оплаты</h2>
+                <button className="btn btn-primary" onClick={openCreateModal}>
+                    Добавить
+                </button>
+            </div>
 
-            {/* Форма добавления */}
-            <div className="d-flex gap-2 mb-4">
+            {/* Поиск */}
+            <div className="mb-3">
                 <input
                     type="text"
                     className="form-control"
-                    placeholder="Новый метод оплаты"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Поиск по названию метода..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                 />
-                <button className="btn btn-primary" onClick={handleCreate}>
-                    Добавить
-                </button>
             </div>
 
             {/* Таблица */}
@@ -71,7 +102,7 @@ const PaymentMethodsPage = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {methods.map((m) => (
+                    {filteredMethods.map((m) => (
                         <tr key={m.payment_method_id}>
                             <td>{m.payment_method_id}</td>
                             <td>{m.method_name}</td>
@@ -79,7 +110,7 @@ const PaymentMethodsPage = () => {
                                 <div className="d-flex gap-2">
                                     <button
                                         className="btn btn-sm btn-outline-primary"
-                                        onClick={() => handleUpdate(m.payment_method_id, m.method_name)}
+                                        onClick={() => openEditModal(m.payment_method_id, m.method_name)}
                                     >
                                         Редактировать
                                     </button>
@@ -96,8 +127,70 @@ const PaymentMethodsPage = () => {
                     </tbody>
                 </table>
             </div>
-        </div>
 
+            {/* Модалка создания */}
+            {isModalOpen && (
+                <div className="modal d-block" tabIndex={-1} role="dialog">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Добавить метод оплаты</h5>
+                                <button type="button" className="btn-close"
+                                        onClick={() => setIsModalOpen(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Введите название"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                />
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
+                                    Отмена
+                                </button>
+                                <button className="btn btn-primary" onClick={handleCreate}>
+                                    Сохранить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Модалка редактирования */}
+            {isEditModalOpen && (
+                <div className="modal d-block" tabIndex={-1} role="dialog">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Редактирование метода оплаты</h5>
+                                <button type="button" className="btn-close"
+                                        onClick={() => setIsEditModalOpen(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                />
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setIsEditModalOpen(false)}>
+                                    Отмена
+                                </button>
+                                <button className="btn btn-primary" onClick={handleEditSubmit}>
+                                    Сохранить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     )
 }
 
